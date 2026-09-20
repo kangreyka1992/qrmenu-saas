@@ -33,7 +33,7 @@ export default function QRCodeDisplay({ url }: { url: string }) {
         light: '#FFFFFF',
       },
       errorCorrectionLevel: 'H',
-    }).then((dataUrl) => {
+    }).then((dataUrl: string) => {
       const link = document.createElement('a')
       link.download = `qr-${url.split('/').pop()}.png`
       link.href = dataUrl
