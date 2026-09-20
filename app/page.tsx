@@ -24,7 +24,7 @@ export default function Home() {
           <div className="flex gap-3 justify-center flex-wrap">
             <Link
               href="/signup"
-              className="px-8 py-4 bg-gradient-to-r from-[#ff9b26] to-[#e07a00] text-black font-bold rounded-xl"
+              className="px-8 py-4 bg-gradient-to-r from-[#ff9b26] to-[#e07a00] text-black font-bold rounded-xl shadow-lg shadow-[#ff9b26]/30"
             >
               🚀 Начать бесплатно
             </Link>
@@ -34,6 +34,40 @@ export default function Home() {
             >
               👀 Посмотреть демо
             </Link>
+          </div>
+
+          <div className="flex justify-center gap-3 mt-8 text-sm">
+            <Link href="/login" className="text-[#8a92a3] hover:text-white">
+              Войти
+            </Link>
+            <span className="text-[#5a6373]">·</span>
+            <Link href="/signup" className="text-[#ff9b26] font-bold hover:underline">
+              Регистрация
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats */}
+      <section className="px-5 pb-16">
+        <div className="max-w-3xl mx-auto flex justify-center gap-16 flex-wrap">
+          <div className="text-center">
+            <div className="text-3xl font-black text-[#ff9b26]">990 ₽</div>
+            <div className="text-xs text-[#5a6373] uppercase tracking-wider mt-1">
+              в месяц
+            </div>
+          </div>
+          <div className="text-center">
+            <div className="text-3xl font-black text-[#ff9b26]">3 мин</div>
+            <div className="text-xs text-[#5a6373] uppercase tracking-wider mt-1">
+              на создание
+            </div>
+          </div>
+          <div className="text-center">
+            <div className="text-3xl font-black text-[#ff9b26]">14 дней</div>
+            <div className="text-xs text-[#5a6373] uppercase tracking-wider mt-1">
+              бесплатно
+            </div>
           </div>
         </div>
       </section>
