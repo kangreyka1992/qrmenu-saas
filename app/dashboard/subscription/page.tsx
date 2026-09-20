@@ -5,12 +5,9 @@ import { getSubscription, getTrialDaysLeft } from '@/lib/subscription'
 import { PLANS } from '@/lib/plans'
 import SubscribeButton from './SubscribeButton'
 
-
 export default async function SubscriptionPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  const subscription = await getSubscription(user.id)
-  const trialDaysLeft = await getTrialDaysLeft(user.id)
 
   if (!user) redirect('/login')
 
@@ -27,7 +24,6 @@ export default async function SubscriptionPage() {
           ← Назад
         </Link>
 
-        {/* Статус подписки */}
         <div className="bg-[#1a1d24] p-6 rounded-2xl border border-white/10 mb-8">
           <h1 className="text-2xl font-black text-white mb-4">Подписка</h1>
 
@@ -67,7 +63,6 @@ export default async function SubscriptionPage() {
           )}
         </div>
 
-        {/* Тарифы */}
         <h2 className="text-xl font-black text-white mb-6">Тарифы</h2>
 
         <div className="grid md:grid-cols-3 gap-4">

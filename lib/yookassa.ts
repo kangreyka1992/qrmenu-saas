@@ -20,6 +20,7 @@ export interface YookassaPayment {
     value: string
     currency: string
   }
+  metadata: Record<string, string>
 }
 
 export async function createYookassaPayment(

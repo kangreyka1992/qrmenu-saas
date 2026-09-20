@@ -9,8 +9,8 @@ export default async function DashboardPage() {
 
   if (!user) redirect('/login')
 
-  const subscription = await getSubscription(user.id)
-  const trialDaysLeft = await getTrialDaysLeft(user.id)
+  const subscription = await getSubscription(user.id)   
+  const trialDaysLeft = await getTrialDaysLeft(user.id)  
 
   const { data: restaurants } = await supabase
     .from('restaurants')
