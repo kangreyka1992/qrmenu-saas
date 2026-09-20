@@ -1,12 +1,16 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { getSubscription, getTrialDaysLeft } from '@/lib/subscription'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) redirect('/login')
+
+  const subscription = await getSubscription(user.id)
+  const trialDaysLeft = await getTrialDaysLeft(user.id)
 
   const { data: restaurants } = await supabase
     .from('restaurants')
@@ -20,7 +24,46 @@ export default async function DashboardPage() {
           <div>
             <h1 className="text-2xl font-black text-white">Мои заведения</h1>
             <p className="text-sm text-[#8a92a3] mt-1">{user.email}</p>
+
+            {subscription?.status === 'trial' && (
+              <div className="mt-3 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg inline-block">
+                <span className="text-yellow-400 text-sm font-bold">
+                  🎁 Триал: {trialDaysLeft} дней
+                </span>
+                <a
+                  href="/dashboard/subscription"
+                  className="ml-3 text-[#ff9b26] text-sm font-bold hover:underline"
+                >
+                  Оформить подписку →
+                </a>
+              </div>
+            )}
+
+            {subscription?.status === 'active' && (
+              <div className="mt-3 p-3 bg-green-500/10 border border-green-500/30 rounded-lg inline-block">
+                <span className="text-green-400 text-sm font-bold">
+                  ✅ Подписка активна
+                </span>
+              </div>
+            )}
+
+            {subscription &&
+              subscription.status !== 'trial' &&
+              subscription.status !== 'active' && (
+                <div className="mt-3 p-3 bg-red-500/10 border border-red-500/30 rounded-lg inline-block">
+                  <span className="text-red-400 text-sm font-bold">
+                    ⚠️ Подписка не активна
+                  </span>
+                  <a
+                    href="/dashboard/subscription"
+                    className="ml-3 text-[#ff9b26] text-sm font-bold hover:underline"
+                  >
+                    Оформить →
+                  </a>
+                </div>
+              )}
           </div>
+
           <Link
             href="/dashboard/new"
             className="px-5 py-3 bg-gradient-to-r from-[#ff9b26] to-[#e07a00] text-black font-bold rounded-lg"

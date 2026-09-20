@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
+import { isSubscriptionActive } from '@/lib/subscription'
 
 export default async function MenuPage({
   params,
@@ -17,6 +18,24 @@ export default async function MenuPage({
     .single()
 
   if (!restaurant) notFound()
+
+  const subActive = await isSubscriptionActive(restaurant.user_id)
+
+if (!subActive) {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-[#f5f5f5] p-6">
+      <div className="text-center max-w-md">
+        <div className="text-6xl mb-4">⏸</div>
+        <h1 className="text-2xl font-black text-gray-900 mb-2">
+          Меню временно недоступно
+        </h1>
+        <p className="text-gray-500">
+          Владелец заведения не оплатил подписку. Меню вернётся после оплаты.
+        </p>
+      </div>
+    </div>
+  )
+}
 
   const { data: categories } = await supabase
     .from('categories')
