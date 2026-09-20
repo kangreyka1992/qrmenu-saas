@@ -17,7 +17,7 @@ export default function PrivacyPage() {
               <li>Email и пароль (для авторизации)</li>
               <li>Название заведения, адрес, телефон</li>
               <li>Информация о блюдах (название, описание, цена, фото)</li>
-              <li>Платёжные данные (обрабатываются ЮKassa, мы их не храним)</li>
+              <li>Платёжные данные (обрабатываются Robokassa, мы их не храним)</li>
             </ul>
           </section>
 
@@ -33,7 +33,7 @@ export default function PrivacyPage() {
             <h2 className="text-xl font-bold text-white mb-3">3. Передача третьим лицам</h2>
             <p>
               Мы не передаём данные третьим лицам, кроме случаев, необходимых 
-              для работы Сервиса (платёжный сервис ЮKassa, хостинг Vercel, БД Supabase).
+              для работы Сервиса (платёжный сервис Robokassa, хостинг Vercel, БД Supabase).
             </p>
           </section>
 

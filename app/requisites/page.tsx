@@ -50,7 +50,7 @@ export default function RequisitesPage() {
           <section>
             <h2 className="text-xl font-bold text-white mb-3">Оплата</h2>
             <p>
-              Оплата услуг производится через платёжный сервис ЮKassa 
+              Оплата услуг производится через платёжный сервис Robokassa 
               (ЮMoney). Все платежи защищены и соответствуют требованиям 
               безопасности PCI DSS.
             </p>
