@@ -46,12 +46,20 @@ export default async function EditRestaurantPage({
               /menu/{restaurant.slug}
             </Link>
           </p>
-          <Link
-            href={`/dashboard/${restaurant.id}/qr`}
-            className="inline-block px-5 py-3 bg-gradient-to-r from-[#ff9b26] to-[#e07a00] text-black font-bold rounded-lg"
-          >
-            📱 QR-код для печати
-          </Link>
+          <div className="flex gap-2 flex-wrap">
+            <Link
+              href={`/dashboard/${restaurant.id}/qr`}
+              className="inline-block px-5 py-3 bg-gradient-to-r from-[#ff9b26] to-[#e07a00] text-black font-bold rounded-lg"
+            >
+              📱 QR-код для печати
+            </Link>
+            <Link
+              href={`/dashboard/${restaurant.id}/settings`}
+              className="inline-block px-5 py-3 bg-white/5 border border-white/10 text-white font-bold rounded-lg"
+            >
+              ⚙️ Настройки заведения
+            </Link>
+          </div>
         </div>
 
         {/* Кнопка добавить категорию */}

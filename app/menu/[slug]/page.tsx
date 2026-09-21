@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
+import Link from 'next/link'
 import { isSubscriptionActive } from '@/lib/subscription'
+import ShareButton from './ShareButton'
 
 export default async function MenuPage({
   params,
@@ -19,23 +21,24 @@ export default async function MenuPage({
 
   if (!restaurant) notFound()
 
+  // Проверка подписки
   const subActive = await isSubscriptionActive(restaurant.user_id)
 
-if (!subActive) {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-[#f5f5f5] p-6">
-      <div className="text-center max-w-md">
-        <div className="text-6xl mb-4">⏸</div>
-        <h1 className="text-2xl font-black text-gray-900 mb-2">
-          Меню временно недоступно
-        </h1>
-        <p className="text-gray-500">
-          Владелец заведения не оплатил подписку. Меню вернётся после оплаты.
-        </p>
+  if (!subActive) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#f5f5f5] p-6">
+        <div className="text-center max-w-md">
+          <div className="text-6xl mb-4">⏸</div>
+          <h1 className="text-2xl font-black text-gray-900 mb-2">
+            Меню временно недоступно
+          </h1>
+          <p className="text-gray-500">
+            Владелец заведения не оплатил подписку. Меню вернётся после оплаты.
+          </p>
+        </div>
       </div>
-    </div>
-  )
-}
+    )
+  }
 
   const { data: categories } = await supabase
     .from('categories')
@@ -43,19 +46,29 @@ if (!subActive) {
     .eq('restaurant_id', restaurant.id)
     .order('sort_order')
 
+  const primaryColor = restaurant.primary_color || '#d4a574'
+
   return (
     <div
       className="min-h-screen bg-[#f5f5f5]"
       style={{ maxWidth: 600, margin: '0 auto' }}
     >
-      {/* Шапка */}
+      {/* ═══ ШАПКА ═══ */}
       <div
         className="text-center py-10 px-5 text-white"
         style={{
-          background: `linear-gradient(135deg, ${restaurant.primary_color}, ${restaurant.primary_color}dd)`,
+          background: `linear-gradient(135deg, ${primaryColor}, ${primaryColor}dd)`,
         }}
       >
-        <div className="text-5xl mb-3">☕</div>
+        {restaurant.logo_url ? (
+          <img
+            src={restaurant.logo_url}
+            alt={restaurant.name}
+            className="w-20 h-20 rounded-xl mx-auto mb-3 object-cover shadow-lg"
+          />
+        ) : (
+          <div className="text-5xl mb-3">☕</div>
+        )}
         <h1 className="text-2xl font-black">{restaurant.name}</h1>
         {restaurant.address && (
           <p className="text-sm opacity-90 mt-2">📍 {restaurant.address}</p>
@@ -63,9 +76,12 @@ if (!subActive) {
         {restaurant.phone && (
           <p className="text-sm opacity-90 mt-1">📞 {restaurant.phone}</p>
         )}
+        {restaurant.work_hours && (
+          <p className="text-sm opacity-90 mt-1">🕐 {restaurant.work_hours}</p>
+        )}
       </div>
 
-      {/* Меню */}
+      {/* ═══ МЕНЮ ═══ */}
       <div className="p-4 pb-24">
         {!categories?.length ? (
           <div className="text-center py-20 text-gray-400">
@@ -81,7 +97,7 @@ if (!subActive) {
                 <h2 className="text-lg font-black mb-4 flex items-center gap-2 text-gray-900">
                   <span
                     className="w-1 h-6 rounded"
-                    style={{ background: restaurant.primary_color }}
+                    style={{ background: primaryColor }}
                   />
                   {cat.icon} {cat.name}
                 </h2>
@@ -114,7 +130,7 @@ if (!subActive) {
                     </div>
                     <div
                       className="font-black self-center whitespace-nowrap"
-                      style={{ color: restaurant.primary_color }}
+                      style={{ color: primaryColor }}
                     >
                       {dish.price} ₽
                     </div>
@@ -126,15 +142,42 @@ if (!subActive) {
         )}
       </div>
 
-      {/* Плашка */}
+      {/* ═══ ПЛАВАЮЩИЕ КНОПКИ ═══ */}
       <div
-        className="fixed bottom-0 left-0 right-0 bg-black text-white text-center py-3 text-xs"
+        className="fixed bottom-0 left-0 right-0 z-50"
+        style={{ maxWidth: 600, margin: '0 auto' }}
+      >
+        <div className="p-3 bg-gradient-to-t from-black/90 to-transparent">
+          <div className="grid grid-cols-2 gap-2">
+            {restaurant.phone ? (
+              <a
+                href={`tel:${restaurant.phone.replace(/\D/g, '')}`}
+                className="py-3 bg-white text-gray-900 font-bold rounded-xl text-center text-sm shadow-lg"
+              >
+                📞 Позвонить
+              </a>
+            ) : (
+              <div />
+            )}
+
+            <ShareButton
+              restaurantName={restaurant.name}
+              slug={restaurant.slug}
+              primaryColor={primaryColor}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* ═══ ПЛАШКА QRMenu ═══ */}
+      <div
+        className="bg-black text-white text-center py-3 text-xs"
         style={{ maxWidth: 600, margin: '0 auto' }}
       >
         Создано в{' '}
-        <a href="/" className="text-[#ff9b26] font-bold">
+        <Link href="/" className="font-bold" style={{ color: primaryColor }}>
           QRMenu
-        </a>{' '}
+        </Link>{' '}
         · 990 ₽/мес
       </div>
     </div>

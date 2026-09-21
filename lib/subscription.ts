@@ -14,11 +14,16 @@ export interface Subscription {
 export async function getSubscription(userId: string): Promise<Subscription | null> {
   const supabase = await createClient()
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('subscriptions')
     .select('*')
     .eq('user_id', userId)
-    .single()
+    .maybeSingle()
+
+  if (error) {
+    console.error('getSubscription error:', error)
+    return null
+  }
 
   return data
 }
