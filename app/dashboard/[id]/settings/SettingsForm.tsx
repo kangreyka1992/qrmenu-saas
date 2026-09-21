@@ -4,17 +4,17 @@ import { useState } from 'react'
 import { updateRestaurant } from './actions'
 
 const COLOR_PRESETS = [
-  '#d4a574', // Бежевый
-  '#ff6b6b', // Красный
-  '#4ecdc4', // Бирюзовый
-  '#95e1d3', // Мятный
-  '#f38181', // Коралловый
-  '#aa96da', // Сиреневый
-  '#ffd93d', // Жёлтый
-  '#6bcf7f', // Зелёный
-  '#4a9eff', // Синий
-  '#ff8c42', // Оранжевый
-  '#000000', // Чёрный
+  '#d4a574',
+  '#ff6b6b',
+  '#4ecdc4',
+  '#95e1d3',
+  '#f38181',
+  '#aa96da',
+  '#ffd93d',
+  '#6bcf7f',
+  '#4a9eff',
+  '#ff8c42',
+  '#000000',
 ]
 
 export default function SettingsForm({ restaurant }: { restaurant: any }) {
@@ -167,6 +167,24 @@ export default function SettingsForm({ restaurant }: { restaurant: any }) {
           placeholder="08:00–23:00"
           className="w-full px-4 py-3 bg-[#0a0e14] border border-white/10 rounded-lg text-white outline-none focus:border-[#ff9b26]"
         />
+      </div>
+
+      {/* Telegram Chat ID для уведомлений */}
+      <div>
+        <label className="block text-sm text-[#8a92a3] mb-2 font-bold">
+          📱 Telegram Chat ID для уведомлений о заказах
+        </label>
+        <input
+          name="telegram_chat_id"
+          defaultValue={restaurant.telegram_chat_id || ''}
+          placeholder="Например: 123456789"
+          className="w-full px-4 py-3 bg-[#0a0e14] border border-white/10 rounded-lg text-white outline-none focus:border-[#ff9b26]"
+        />
+        <p className="text-xs text-[#5a6373] mt-2">
+          Чтобы получать уведомления о новых заказах в Telegram — напишите
+          боту <b className="text-[#ff9b26]">@userinfobot</b> команду /start,
+          он покажет ваш ID. Вставьте его сюда.
+        </p>
       </div>
 
       <button

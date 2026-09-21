@@ -36,6 +36,15 @@ export default async function EditRestaurantPage({
     .eq('restaurant_id', restaurant.id)
     .order('sort_order')
 
+  // Считаем новые заказы
+  const { count: newOrdersRaw } = await supabase
+    .from('orders')
+    .select('*', { count: 'exact', head: true })
+    .eq('restaurant_id', id)
+    .eq('status', 'new')
+
+  const newOrders = newOrdersRaw ?? 0
+
   return (
     <div className="min-h-screen bg-[#0a0e14] p-6">
       <div className="max-w-4xl mx-auto">
@@ -67,7 +76,24 @@ export default async function EditRestaurantPage({
               href={`/dashboard/${restaurant.id}/settings`}
               className="inline-block px-5 py-3 bg-white/5 border border-white/10 text-white font-bold rounded-lg"
             >
-              ⚙️ Настройки заведения
+              ⚙️ Настройки
+            </Link>
+            <Link
+              href={`/dashboard/${restaurant.id}/analytics`}
+              className="inline-block px-5 py-3 bg-white/5 border border-white/10 text-white font-bold rounded-lg"
+            >
+              📊 Аналитика
+            </Link>
+            <Link
+              href={`/dashboard/${restaurant.id}/orders`}
+              className="relative inline-block px-5 py-3 bg-white/5 border border-white/10 text-white font-bold rounded-lg"
+            >
+              📦 Заказы
+              {newOrders > 0 && (
+                <span className="absolute -top-2 -right-2 min-w-[24px] h-[24px] px-1 bg-red-500 text-white text-xs font-black rounded-full flex items-center justify-center">
+                  {newOrders}
+                </span>
+              )}
             </Link>
           </div>
         </div>
@@ -97,7 +123,6 @@ export default async function EditRestaurantPage({
                   key={cat.id}
                   className="bg-[#1a1d24] rounded-2xl border border-white/10 p-5"
                 >
-                  {/* Заголовок категории */}
                   <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
                     <h2 className="text-lg font-bold text-white">
                       {cat.icon} {cat.name}
@@ -120,7 +145,6 @@ export default async function EditRestaurantPage({
                     </div>
                   </div>
 
-                  {/* Список блюд */}
                   <div className="space-y-2 mb-3">
                     {sortedDishes.map((dish: any) => (
                       <div
@@ -154,9 +178,7 @@ export default async function EditRestaurantPage({
                           {dish.price} ₽
                         </div>
 
-                        {/* Кнопки управления блюдом */}
                         <div className="flex items-center gap-2 ml-2">
-                          {/* Вверх */}
                           <form action={moveDish}>
                             <input type="hidden" name="dish_id" value={dish.id} />
                             <input type="hidden" name="direction" value="up" />
@@ -171,7 +193,6 @@ export default async function EditRestaurantPage({
                             </button>
                           </form>
 
-                          {/* Вниз */}
                           <form action={moveDish}>
                             <input type="hidden" name="dish_id" value={dish.id} />
                             <input type="hidden" name="direction" value="down" />
@@ -186,7 +207,6 @@ export default async function EditRestaurantPage({
                             </button>
                           </form>
 
-                          {/* Показать/скрыть */}
                           <form action={toggleDishAvailability}>
                             <input type="hidden" name="dish_id" value={dish.id} />
                             <input type="hidden" name="restaurant_id" value={restaurant.id} />
@@ -204,7 +224,6 @@ export default async function EditRestaurantPage({
                             </button>
                           </form>
 
-                          {/* Удалить */}
                           <DeleteButton
                             action={deleteDish}
                             hiddenFields={{
@@ -219,7 +238,6 @@ export default async function EditRestaurantPage({
                     ))}
                   </div>
 
-                  {/* Форма добавления блюда */}
                   <DishForm
                     categoryId={cat.id}
                     restaurantId={restaurant.id}

@@ -1,7 +1,13 @@
 'use client'
 
 import { useState } from 'react'
-import { createCategory, deleteCategory, createDish, deleteDish, uploadDishImage } from './actions'
+import {
+  createCategory,
+  deleteCategory,
+  createDish,
+  deleteDish,
+  uploadDishImage,
+} from './actions'
 
 // ═══ ФОРМА СОЗДАНИЯ КАТЕГОРИИ ═══
 export function CategoryForm({ restaurantId, slug }: { restaurantId: string; slug: string }) {
@@ -71,7 +77,7 @@ export function CategoryForm({ restaurantId, slug }: { restaurantId: string; slu
   )
 }
 
-// ═══ ФОРМА СОЗДАНИЯ БЛЮДА ═══
+// ═══ ФОРМА СОЗДАНИЯ БЛЮДА (с EN-полями) ═══
 export function DishForm({
   categoryId,
   restaurantId,
@@ -133,20 +139,50 @@ export function DishForm({
       <input type="hidden" name="restaurant_id" value={restaurantId} />
       <input type="hidden" name="slug" value={slug} />
 
-      <input
-        name="name"
-        placeholder="Название блюда"
-        required
-        className="w-full px-3 py-2 bg-[#1a1d24] border border-white/10 rounded-lg text-white"
-      />
+      {/* Название RU + EN */}
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <label className="block text-xs text-[#8a92a3] mb-1">Название (RU)</label>
+          <input
+            name="name"
+            placeholder="Филадельфия"
+            required
+            className="w-full px-3 py-2 bg-[#1a1d24] border border-white/10 rounded-lg text-white"
+          />
+        </div>
+        <div>
+          <label className="block text-xs text-[#8a92a3] mb-1">Name (EN)</label>
+          <input
+            name="name_en"
+            placeholder="Philadelphia"
+            className="w-full px-3 py-2 bg-[#1a1d24] border border-white/10 rounded-lg text-white"
+          />
+        </div>
+      </div>
 
-      <textarea
-        name="description"
-        placeholder="Описание"
-        rows={2}
-        className="w-full px-3 py-2 bg-[#1a1d24] border border-white/10 rounded-lg text-white resize-none"
-      />
+      {/* Описание RU + EN */}
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <label className="block text-xs text-[#8a92a3] mb-1">Описание (RU)</label>
+          <textarea
+            name="description"
+            placeholder="Лосось, сливочный сыр"
+            rows={2}
+            className="w-full px-3 py-2 bg-[#1a1d24] border border-white/10 rounded-lg text-white resize-none"
+          />
+        </div>
+        <div>
+          <label className="block text-xs text-[#8a92a3] mb-1">Description (EN)</label>
+          <textarea
+            name="description_en"
+            placeholder="Salmon, cream cheese"
+            rows={2}
+            className="w-full px-3 py-2 bg-[#1a1d24] border border-white/10 rounded-lg text-white resize-none"
+          />
+        </div>
+      </div>
 
+      {/* Цена */}
       <input
         name="price"
         type="number"
@@ -156,6 +192,7 @@ export function DishForm({
         className="w-full px-3 py-2 bg-[#1a1d24] border border-white/10 rounded-lg text-white"
       />
 
+      {/* Фото */}
       <div>
         <label className="block text-xs text-[#8a92a3] mb-2">Фото блюда</label>
         <input
