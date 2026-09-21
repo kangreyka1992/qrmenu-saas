@@ -5,6 +5,7 @@ import { FadeUp, ScaleIn } from './components/HeroAnimations'
 import FAQ from './components/FAQ'
 import PricingCard from './components/PricingCard'
 import HeroStats from './components/HeroStats'
+import LeadForm from './components/LeadForm'
 
 export default function Home() {
   return (
@@ -40,13 +41,13 @@ export default function Home() {
 
           <FadeUp delay={0.3}>
             <div className="flex gap-3 justify-center flex-wrap">
-              <Link
-                href="/signup"
+              <a
+                href="#contact"
                 className="group relative px-8 py-4 bg-gradient-to-r from-[#ff9b26] to-[#e07a00] text-black font-bold rounded-xl shadow-lg shadow-[#ff9b26]/30 hover:shadow-xl hover:shadow-[#ff9b26]/50 transition-all hover:scale-105"
               >
-                🚀 Начать бесплатно
+                🚀 Оставить заявку
                 <span className="absolute inset-0 rounded-xl bg-white opacity-0 group-hover:opacity-10 transition-opacity" />
-              </Link>
+              </a>
               <Link
                 href="/demo"
                 className="px-8 py-4 bg-white/5 border border-white/10 text-white font-bold rounded-xl hover:bg-white/10 hover:border-white/20 transition-all"
@@ -176,35 +177,24 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ═══ CTA ═══ */}
-      <section className="px-5 py-24 border-t border-white/5">
-        <div className="max-w-3xl mx-auto text-center">
+      {/* ═══ CTA + LEAD FORM ═══ */}
+      <section className="px-5 py-24 border-t border-white/5" id="contact">
+        <div className="max-w-3xl mx-auto">
           <FadeUp>
-            <h2 className="text-3xl md:text-5xl font-black mb-6 leading-tight">
-              Готовы запустить{' '}
+            <h2 className="text-3xl md:text-5xl font-black mb-6 leading-tight text-center">
+              Получите готовое{' '}
               <span className="bg-gradient-to-r from-[#ff9b26] to-[#ffb84d] bg-clip-text text-transparent">
-                своё QR-меню?
+                QR-меню за 1 день
               </span>
             </h2>
-            <p className="text-lg text-[#8a92a3] mb-10 max-w-lg mx-auto">
-              Регистрация за 30 секунд. Первое меню — за 3 минуты.
-              14 дней бесплатно.
+            <p className="text-lg text-[#8a92a3] mb-10 max-w-lg mx-auto text-center">
+              Оставьте заявку — мы создадим меню, настроим QR-код 
+              и покажем демо. Вам останется только оплатить.
             </p>
-            <div className="flex gap-3 justify-center flex-wrap">
-              <Link
-                href="/signup"
-                className="group px-8 py-4 bg-gradient-to-r from-[#ff9b26] to-[#e07a00] text-black font-bold rounded-xl shadow-lg shadow-[#ff9b26]/40 hover:shadow-xl hover:shadow-[#ff9b26]/60 transition-all hover:scale-105"
-              >
-                🚀 Создать бесплатно
-              </Link>
-              <a
-                href="https://t.me/Welcomedse"
-                target="_blank"
-                className="px-8 py-4 bg-white/5 border border-white/10 text-white font-bold rounded-xl hover:bg-white/10 transition-all"
-              >
-                💬 Написать в Telegram
-              </a>
-            </div>
+          </FadeUp>
+
+          <FadeUp delay={0.1}>
+            <LeadForm />
           </FadeUp>
         </div>
       </section>
