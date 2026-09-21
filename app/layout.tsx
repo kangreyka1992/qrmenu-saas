@@ -5,6 +5,9 @@ import Link from 'next/link'
 export const metadata: Metadata = {
   title: 'QRMenu — QR-меню для кафе',
   description: 'Создайте красивое QR-меню для кафе за 3 минуты.',
+  verification: {
+    google: 'PFrWizKT8JiSGH0VYeavHzd0s0G7K5xaXXq2unYl1pM', // ← ВСТАВЬ СВОЙ КОД
+  },
 }
 
 export default function RootLayout({
