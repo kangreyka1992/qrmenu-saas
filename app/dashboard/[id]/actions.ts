@@ -203,3 +203,41 @@ export async function uploadDishImage(formData: FormData) {
 
   return publicUrl
 }
+// ═══ РЕДАКТИРОВАНИЕ БЛЮДА ═══
+export async function updateDish(formData: FormData) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Unauthorized')
+
+  const dishId = formData.get('dish_id') as string
+  const restaurantId = formData.get('restaurant_id') as string
+  const slug = formData.get('slug') as string
+  const name = formData.get('name') as string
+  const name_en = (formData.get('name_en') as string) || null
+  const description = (formData.get('description') as string) || null
+  const description_en = (formData.get('description_en') as string) || null
+  const price = parseInt(formData.get('price') as string)
+  const imageUrl = formData.get('image_url') as string
+
+  const updateData: any = {
+    name,
+    name_en,
+    description,
+    description_en,
+    price,
+  }
+
+  // Если image_url пришёл — обновляем (в том числе пустой)
+  if (imageUrl !== null && imageUrl !== '') {
+    updateData.image_url = imageUrl
+  }
+
+  const { error } = await supabase
+    .from('dishes')
+    .update(updateData)
+    .eq('id', dishId)
+
+  if (error) throw new Error(error.message)
+  revalidatePath(`/dashboard/${restaurantId}`)
+  revalidatePath('/menu/' + slug)
+}

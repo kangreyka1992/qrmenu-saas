@@ -35,9 +35,9 @@ export default function OfferPage() {
           <section>
             <h2 className="text-xl font-bold text-white mb-3">3. Стоимость услуг</h2>
             <ul className="list-disc list-inside space-y-1">
-              <li>Тариф «Старт» — 990 ₽ в месяц</li>
-              <li>Тариф «Бизнес» — 2 490 ₽ в месяц</li>
-              <li>Тариф «Сеть» — 4 990 ₽ в месяц</li>
+              <li>Тариф «Старт» — 2490 ₽ в месяц</li>
+              <li>Тариф «Бизнес» — 5 199 ₽ в месяц</li>
+              <li>Тариф «Сеть» — 9 900 ₽ в месяц</li>
             </ul>
             <p className="mt-3">
               Первые 14 дней — бесплатно (пробный период).

@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { CategoryForm, DishForm, DeleteButton } from './components'
 import EditCategoryForm from './EditCategoryForm'
+import EditDishForm from './EditDishForm'
 import {
   deleteCategory,
   deleteDish,
@@ -123,6 +124,7 @@ export default async function EditRestaurantPage({
                   key={cat.id}
                   className="bg-[#1a1d24] rounded-2xl border border-white/10 p-5"
                 >
+                  {/* Заголовок категории */}
                   <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
                     <h2 className="text-lg font-bold text-white">
                       {cat.icon} {cat.name}
@@ -145,6 +147,7 @@ export default async function EditRestaurantPage({
                     </div>
                   </div>
 
+                  {/* Список блюд */}
                   <div className="space-y-2 mb-3">
                     {sortedDishes.map((dish: any) => (
                       <div
@@ -178,7 +181,16 @@ export default async function EditRestaurantPage({
                           {dish.price} ₽
                         </div>
 
+                        {/* Кнопки управления блюдом */}
                         <div className="flex items-center gap-2 ml-2">
+                          {/* РЕДАКТИРОВАНИЕ */}
+                          <EditDishForm
+                            dish={dish}
+                            restaurantId={restaurant.id}
+                            slug={restaurant.slug}
+                          />
+
+                          {/* Вверх */}
                           <form action={moveDish}>
                             <input type="hidden" name="dish_id" value={dish.id} />
                             <input type="hidden" name="direction" value="up" />
@@ -193,6 +205,7 @@ export default async function EditRestaurantPage({
                             </button>
                           </form>
 
+                          {/* Вниз */}
                           <form action={moveDish}>
                             <input type="hidden" name="dish_id" value={dish.id} />
                             <input type="hidden" name="direction" value="down" />
@@ -207,6 +220,7 @@ export default async function EditRestaurantPage({
                             </button>
                           </form>
 
+                          {/* Показать/скрыть */}
                           <form action={toggleDishAvailability}>
                             <input type="hidden" name="dish_id" value={dish.id} />
                             <input type="hidden" name="restaurant_id" value={restaurant.id} />
@@ -224,6 +238,7 @@ export default async function EditRestaurantPage({
                             </button>
                           </form>
 
+                          {/* Удалить */}
                           <DeleteButton
                             action={deleteDish}
                             hiddenFields={{
@@ -238,6 +253,7 @@ export default async function EditRestaurantPage({
                     ))}
                   </div>
 
+                  {/* Форма добавления блюда */}
                   <DishForm
                     categoryId={cat.id}
                     restaurantId={restaurant.id}

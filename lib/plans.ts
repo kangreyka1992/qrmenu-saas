@@ -10,7 +10,7 @@ export const PLANS: Plan[] = [
   {
     id: 'start',
     name: 'Старт',
-    price: 990,
+    price: 2490,
     features: [
       '1 заведение',
       'Безлимит блюд',
@@ -22,20 +22,20 @@ export const PLANS: Plan[] = [
   {
     id: 'business',
     name: 'Бизнес',
-    price: 2490,
+    price: 5199,
     popular: true,
     features: [
       'До 3 заведений',
       'Всё из «Старт»',
       'Мультиязычность',
       'Аналитика просмотров',
-      'UTM-метки',
+      'Онлайн-заказ',
     ],
   },
   {
     id: 'network',
     name: 'Сеть',
-    price: 4990,
+    price: 9900,
     features: [
       'До 10 заведений',
       'Всё из «Бизнес»',

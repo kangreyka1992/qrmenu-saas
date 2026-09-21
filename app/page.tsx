@@ -4,6 +4,7 @@ import AnimatedGradient from './components/AnimatedGradient'
 import { FadeUp, ScaleIn } from './components/HeroAnimations'
 import FAQ from './components/FAQ'
 import PricingCard from './components/PricingCard'
+import HeroStats from './components/HeroStats'
 
 export default function Home() {
   return (
@@ -74,28 +75,9 @@ export default function Home() {
           </FadeUp>
         </div>
 
-        {/* Stats */}
+        {/* ═══ STATS — премиум-блок ═══ */}
         <FadeUp delay={0.5}>
-          <div className="max-w-3xl mx-auto flex justify-center gap-16 flex-wrap mt-20">
-            <div className="text-center">
-              <div className="text-4xl font-black text-[#ff9b26] font-mono">990 ₽</div>
-              <div className="text-xs text-[#5a6373] uppercase tracking-wider mt-2">
-                в месяц
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-black text-[#ff9b26] font-mono">3 мин</div>
-              <div className="text-xs text-[#5a6373] uppercase tracking-wider mt-2">
-                на создание
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-black text-[#ff9b26] font-mono">14 дней</div>
-              <div className="text-xs text-[#5a6373] uppercase tracking-wider mt-2">
-                бесплатно
-              </div>
-            </div>
-          </div>
+          <HeroStats />
         </FadeUp>
       </section>
 
@@ -113,12 +95,36 @@ export default function Home() {
 
           <div className="grid md:grid-cols-3 gap-6">
             {[
-              { icon: '⚡', title: 'Запуск за 3 минуты', desc: 'Регистрация → создание меню → получение QR-кода. Быстрее, чем сварить кофе.' },
-              { icon: '✏️', title: 'Обновление в 2 клика', desc: 'Изменить цену, добавить блюдо, загрузить фото — всё через удобную админку.' },
-              { icon: '📱', title: 'QR-код для печати', desc: 'Скачайте PNG высокого разрешения и разместите на столах, стойке, входе.' },
-              { icon: '🍽', title: 'Онлайн-заказ', desc: 'Гости заказывают прямо из меню. Вы получаете уведомление в Telegram.' },
-              { icon: '🌍', title: 'Мультиязычность', desc: 'Русский и английский. Идеально для курортных городов и туристов.' },
-              { icon: '📊', title: 'Аналитика', desc: 'Сколько гостей открыли меню, какие блюда смотрят чаще всего.' },
+              {
+                icon: '⚡',
+                title: 'Запуск за 3 минуты',
+                desc: 'Регистрация → создание меню → получение QR-кода. Быстрее, чем сварить кофе.',
+              },
+              {
+                icon: '✏️',
+                title: 'Обновление в 2 клика',
+                desc: 'Изменить цену, добавить блюдо, загрузить фото — всё через удобную админку.',
+              },
+              {
+                icon: '📱',
+                title: 'QR-код для печати',
+                desc: 'Скачайте PNG высокого разрешения и разместите на столах, стойке, входе.',
+              },
+              {
+                icon: '🍽',
+                title: 'Онлайн-заказ',
+                desc: 'Гости заказывают прямо из меню. Вы получаете уведомление в Telegram.',
+              },
+              {
+                icon: '🌍',
+                title: 'Мультиязычность',
+                desc: 'Русский и английский. Идеально для курортных городов и туристов.',
+              },
+              {
+                icon: '📊',
+                title: 'Аналитика',
+                desc: 'Сколько гостей открыли меню, какие блюда смотрят чаще всего.',
+              },
             ].map((f, i) => (
               <ScaleIn key={i} delay={i * 0.05}>
                 <div className="group p-6 bg-[#1a1d24] border border-white/5 rounded-2xl hover:border-[#ff9b26]/30 hover:bg-[#1a1d24]/80 transition-all">
