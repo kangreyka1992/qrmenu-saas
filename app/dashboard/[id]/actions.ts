@@ -105,3 +105,98 @@ export async function uploadDishImage(formData: FormData) {
 
   return publicUrl
 }
+export async function toggleDishAvailability(formData: FormData) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Unauthorized')
+
+  const dishId = formData.get('dish_id') as string
+  const restaurantId = formData.get('restaurant_id') as string
+  const slug = formData.get('slug') as string
+
+  // Получаем текущее значение
+  const { data: dish } = await supabase
+    .from('dishes')
+    .select('is_available')
+    .eq('id', dishId)
+    .single()
+
+  if (!dish) throw new Error('Dish not found')
+
+  // Переключаем
+  await supabase
+    .from('dishes')
+    .update({ is_available: !dish.is_available })
+    .eq('id', dishId)
+
+  revalidatePath(`/dashboard/${restaurantId}`)
+  revalidatePath('/menu/' + slug)
+}
+export async function moveDish(formData: FormData) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Unauthorized')
+
+  const dishId = formData.get('dish_id') as string
+  const direction = formData.get('direction') as 'up' | 'down'
+  const restaurantId = formData.get('restaurant_id') as string
+  const slug = formData.get('slug') as string
+
+  // Получаем блюдо
+  const { data: dish } = await supabase
+    .from('dishes')
+    .select('id, sort_order, category_id')
+    .eq('id', dishId)
+    .single()
+
+  if (!dish) throw new Error('Dish not found')
+
+  // Получаем соседнее блюдо в этой категории
+  const { data: neighbors } = await supabase
+    .from('dishes')
+    .select('id, sort_order')
+    .eq('category_id', dish.category_id)
+    .order('sort_order', { ascending: true })
+
+  if (!neighbors) return
+
+  const currentIdx = neighbors.findIndex((d) => d.id === dishId)
+  const swapIdx = direction === 'up' ? currentIdx - 1 : currentIdx + 1
+
+  if (swapIdx < 0 || swapIdx >= neighbors.length) return // Нечего менять
+
+  const neighbor = neighbors[swapIdx]
+
+  // Меняем местами
+  await supabase
+    .from('dishes')
+    .update({ sort_order: neighbor.sort_order })
+    .eq('id', dish.id)
+
+  await supabase
+    .from('dishes')
+    .update({ sort_order: dish.sort_order })
+    .eq('id', neighbor.id)
+
+  revalidatePath(`/dashboard/${restaurantId}`)
+  revalidatePath('/menu/' + slug)
+}
+export async function updateCategory(formData: FormData) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Unauthorized')
+
+  const categoryId = formData.get('category_id') as string
+  const name = formData.get('name') as string
+  const icon = formData.get('icon') as string
+  const restaurantId = formData.get('restaurant_id') as string
+  const slug = formData.get('slug') as string
+
+  await supabase
+    .from('categories')
+    .update({ name, icon })
+    .eq('id', categoryId)
+
+  revalidatePath(`/dashboard/${restaurantId}`)
+  revalidatePath('/menu/' + slug)
+}

@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { isSubscriptionActive } from '@/lib/subscription'
 import ShareButton from './ShareButton'
+import MenuSearch from './MenuSearch'
+import TrackView from './TrackView'
 
 export default async function MenuPage({
   params,
@@ -30,6 +32,7 @@ export default async function MenuPage({
         <div className="text-center max-w-md">
           <div className="text-6xl mb-4">⏸</div>
           <h1 className="text-2xl font-black text-gray-900 mb-2">
+            <TrackView restaurantId={restaurant.id} />
             Меню временно недоступно
           </h1>
           <p className="text-gray-500">
@@ -45,6 +48,14 @@ export default async function MenuPage({
     .select('*, dishes(*)')
     .eq('restaurant_id', restaurant.id)
     .order('sort_order')
+
+  // Сортируем блюда по sort_order внутри каждой категории
+  const sortedCategories = (categories || []).map((cat: any) => ({
+    ...cat,
+    dishes: [...(cat.dishes || [])].sort(
+      (a: any, b: any) => (a.sort_order || 0) - (b.sort_order || 0)
+    ),
+  }))
 
   const primaryColor = restaurant.primary_color || '#d4a574'
 
@@ -81,66 +92,11 @@ export default async function MenuPage({
         )}
       </div>
 
-      {/* ═══ МЕНЮ ═══ */}
-      <div className="p-4 pb-24">
-        {!categories?.length ? (
-          <div className="text-center py-20 text-gray-400">
-            Меню пока пустое
-          </div>
-        ) : (
-          categories.map((cat: any) => {
-            const dishes = (cat.dishes || []).filter((d: any) => d.is_available)
-            if (dishes.length === 0) return null
-
-            return (
-              <div key={cat.id} className="mb-8">
-                <h2 className="text-lg font-black mb-4 flex items-center gap-2 text-gray-900">
-                  <span
-                    className="w-1 h-6 rounded"
-                    style={{ background: primaryColor }}
-                  />
-                  {cat.icon} {cat.name}
-                </h2>
-
-                {dishes.map((dish: any) => (
-                  <div
-                    key={dish.id}
-                    className="flex gap-3 p-3 bg-white rounded-xl mb-2 shadow-sm"
-                  >
-                    <div className="w-20 h-20 rounded-lg bg-[#f0f0f0] overflow-hidden flex-shrink-0 flex items-center justify-center text-3xl">
-                      {dish.image_url ? (
-                        <img
-                          src={dish.image_url}
-                          alt={dish.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        '🍽'
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-bold text-sm mb-1 text-gray-900">
-                        {dish.name}
-                      </div>
-                      {dish.description && (
-                        <div className="text-xs text-gray-500 line-clamp-2">
-                          {dish.description}
-                        </div>
-                      )}
-                    </div>
-                    <div
-                      className="font-black self-center whitespace-nowrap"
-                      style={{ color: primaryColor }}
-                    >
-                      {dish.price} ₽
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )
-          })
-        )}
-      </div>
+      {/* ═══ МЕНЮ С ПОИСКОМ ═══ */}
+      <MenuSearch
+        categories={sortedCategories}
+        primaryColor={primaryColor}
+      />
 
       {/* ═══ ПЛАВАЮЩИЕ КНОПКИ ═══ */}
       <div

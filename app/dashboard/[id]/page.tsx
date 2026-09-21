@@ -2,7 +2,13 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { CategoryForm, DishForm, DeleteButton } from './components'
-import { deleteCategory, deleteDish } from './actions'
+import EditCategoryForm from './EditCategoryForm'
+import {
+  deleteCategory,
+  deleteDish,
+  toggleDishAvailability,
+  moveDish,
+} from './actions'
 
 export default async function EditRestaurantPage({
   params,
@@ -42,7 +48,11 @@ export default async function EditRestaurantPage({
           <h1 className="text-2xl font-black text-white mb-2">{restaurant.name}</h1>
           <p className="text-sm text-[#8a92a3] mb-4">
             Публичная ссылка:{' '}
-            <Link href={`/menu/${restaurant.slug}`} target="_blank" className="text-[#ff9b26] font-bold">
+            <Link
+              href={`/menu/${restaurant.slug}`}
+              target="_blank"
+              className="text-[#ff9b26] font-bold"
+            >
               /menu/{restaurant.slug}
             </Link>
           </p>
@@ -77,74 +87,147 @@ export default async function EditRestaurantPage({
           </div>
         ) : (
           <div className="space-y-4">
-            {categories.map((cat: any) => (
-              <div key={cat.id} className="bg-[#1a1d24] rounded-2xl border border-white/10 p-5">
-                {/* Заголовок категории */}
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-lg font-bold text-white">
-                    {cat.icon} {cat.name}
-                  </h2>
-                  <DeleteButton
-                    action={deleteCategory}
-                    hiddenFields={{
-                      category_id: cat.id,
-                      restaurant_id: restaurant.id,
-                      slug: restaurant.slug,
-                    }}
-                    confirmText={`Удалить категорию "${cat.name}"? Все блюда тоже удалятся.`}
-                  />
-                </div>
+            {categories.map((cat: any) => {
+              const sortedDishes = [...(cat.dishes || [])].sort(
+                (a: any, b: any) => (a.sort_order || 0) - (b.sort_order || 0)
+              )
 
-                {/* Список блюд */}
-                <div className="space-y-2 mb-3">
-                  {cat.dishes?.map((dish: any) => (
-                    <div
-                      key={dish.id}
-                      className="flex gap-3 p-3 bg-[#0a0e14] rounded-lg items-center"
-                    >
-                      <div className="w-12 h-12 rounded-lg bg-[#1a1d24] overflow-hidden flex-shrink-0 flex items-center justify-center text-xl">
-                        {dish.image_url ? (
-                          <img
-                            src={dish.image_url}
-                            alt={dish.name}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          '🍽'
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-bold text-white">{dish.name}</div>
-                        {dish.description && (
-                          <div className="text-xs text-[#8a92a3] line-clamp-1">
-                            {dish.description}
-                          </div>
-                        )}
-                      </div>
-                      <div className="text-sm font-black text-[#ff9b26] whitespace-nowrap">
-                        {dish.price} ₽
-                      </div>
+              return (
+                <div
+                  key={cat.id}
+                  className="bg-[#1a1d24] rounded-2xl border border-white/10 p-5"
+                >
+                  {/* Заголовок категории */}
+                  <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
+                    <h2 className="text-lg font-bold text-white">
+                      {cat.icon} {cat.name}
+                    </h2>
+                    <div className="flex items-center gap-3">
+                      <EditCategoryForm
+                        category={cat}
+                        restaurantId={restaurant.id}
+                        slug={restaurant.slug}
+                      />
                       <DeleteButton
-                        action={deleteDish}
+                        action={deleteCategory}
                         hiddenFields={{
-                          dish_id: dish.id,
+                          category_id: cat.id,
                           restaurant_id: restaurant.id,
                           slug: restaurant.slug,
                         }}
-                        confirmText={`Удалить "${dish.name}"?`}
+                        confirmText={`Удалить категорию "${cat.name}"? Все блюда тоже удалятся.`}
                       />
                     </div>
-                  ))}
-                </div>
+                  </div>
 
-                {/* Форма добавления блюда */}
-                <DishForm
-                  categoryId={cat.id}
-                  restaurantId={restaurant.id}
-                  slug={restaurant.slug}
-                />
-              </div>
-            ))}
+                  {/* Список блюд */}
+                  <div className="space-y-2 mb-3">
+                    {sortedDishes.map((dish: any) => (
+                      <div
+                        key={dish.id}
+                        className={`flex gap-3 p-3 bg-[#0a0e14] rounded-lg items-center ${
+                          !dish.is_available ? 'opacity-50' : ''
+                        }`}
+                      >
+                        <div className="w-12 h-12 rounded-lg bg-[#1a1d24] overflow-hidden flex-shrink-0 flex items-center justify-center text-xl">
+                          {dish.image_url ? (
+                            <img
+                              src={dish.image_url}
+                              alt={dish.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            '🍽'
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-bold text-white">
+                            {dish.name}
+                          </div>
+                          {dish.description && (
+                            <div className="text-xs text-[#8a92a3] line-clamp-1">
+                              {dish.description}
+                            </div>
+                          )}
+                        </div>
+                        <div className="text-sm font-black text-[#ff9b26] whitespace-nowrap">
+                          {dish.price} ₽
+                        </div>
+
+                        {/* Кнопки управления блюдом */}
+                        <div className="flex items-center gap-2 ml-2">
+                          {/* Вверх */}
+                          <form action={moveDish}>
+                            <input type="hidden" name="dish_id" value={dish.id} />
+                            <input type="hidden" name="direction" value="up" />
+                            <input type="hidden" name="restaurant_id" value={restaurant.id} />
+                            <input type="hidden" name="slug" value={restaurant.slug} />
+                            <button
+                              type="submit"
+                              className="w-10 h-10 rounded-lg bg-[#1a1d24] hover:bg-[#232732] text-white text-lg font-bold transition-colors"
+                              title="Вверх"
+                            >
+                              ↑
+                            </button>
+                          </form>
+
+                          {/* Вниз */}
+                          <form action={moveDish}>
+                            <input type="hidden" name="dish_id" value={dish.id} />
+                            <input type="hidden" name="direction" value="down" />
+                            <input type="hidden" name="restaurant_id" value={restaurant.id} />
+                            <input type="hidden" name="slug" value={restaurant.slug} />
+                            <button
+                              type="submit"
+                              className="w-10 h-10 rounded-lg bg-[#1a1d24] hover:bg-[#232732] text-white text-lg font-bold transition-colors"
+                              title="Вниз"
+                            >
+                              ↓
+                            </button>
+                          </form>
+
+                          {/* Показать/скрыть */}
+                          <form action={toggleDishAvailability}>
+                            <input type="hidden" name="dish_id" value={dish.id} />
+                            <input type="hidden" name="restaurant_id" value={restaurant.id} />
+                            <input type="hidden" name="slug" value={restaurant.slug} />
+                            <button
+                              type="submit"
+                              className={`w-10 h-10 rounded-lg text-lg transition-colors ${
+                                dish.is_available
+                                  ? 'bg-green-500/15 text-green-400 hover:bg-green-500/25'
+                                  : 'bg-gray-500/15 text-gray-500 hover:bg-gray-500/25'
+                              }`}
+                              title={dish.is_available ? 'Скрыть' : 'Показать'}
+                            >
+                              👁
+                            </button>
+                          </form>
+
+                          {/* Удалить */}
+                          <DeleteButton
+                            action={deleteDish}
+                            hiddenFields={{
+                              dish_id: dish.id,
+                              restaurant_id: restaurant.id,
+                              slug: restaurant.slug,
+                            }}
+                            confirmText={`Удалить "${dish.name}"?`}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Форма добавления блюда */}
+                  <DishForm
+                    categoryId={cat.id}
+                    restaurantId={restaurant.id}
+                    slug={restaurant.slug}
+                  />
+                </div>
+              )
+            })}
           </div>
         )}
       </div>
