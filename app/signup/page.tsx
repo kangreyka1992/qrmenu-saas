@@ -1,12 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-export default function SignupPage() {
+function SignupContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -28,27 +30,14 @@ export default function SignupPage() {
       return;
     }
 
-    // Если Supabase требует подтверждение email — data.user может быть null
-    if (!data.user) {
-      setLoading(false);
-      alert("Проверьте почту — нужно подтвердить email.");
-      router.push("/login");
-      return;
-    }
-
-    // Проверяем профиль (новый пользователь точно не админ)
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("is_admin")
-      .eq("id", data.user.id)
-      .single();
-
     setLoading(false);
 
-    if (profile?.is_admin) {
-      router.push("/admin");
+    const plan = searchParams.get("plan");
+
+    if (plan) {
+      router.push(`/tariffs?plan=${encodeURIComponent(plan)}&autoPay=1`);
     } else {
-      router.push("/#tariffs");
+      router.push("/tariffs");
     }
   };
 
@@ -101,5 +90,13 @@ export default function SignupPage() {
         </p>
       </form>
     </div>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#0a0a0a]" />}>
+      <SignupContent />
+    </Suspense>
   );
 }

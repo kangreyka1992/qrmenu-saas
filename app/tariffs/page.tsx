@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 type Plan = {
@@ -48,8 +48,9 @@ const plans: Plan[] = [
   },
 ];
 
-export default function TariffsPage() {
+function TariffsContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
 
   const [loading, setLoading] = useState<string | null>(null);
@@ -57,25 +58,34 @@ export default function TariffsPage() {
   const [user, setUser] = useState<any>(null);
   const [checkingAuth, setCheckingAuth] = useState(true);
 
-  // Проверяем, залогинен ли пользователь
   useEffect(() => {
     const check = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
       if (user?.email) setEmail(user.email);
       setCheckingAuth(false);
+
+      // Автооплата после возврата с регистрации
+      const planName = searchParams.get("plan");
+      const autoPay = searchParams.get("autoPay");
+
+      if (user && planName && autoPay === "1") {
+        const plan = plans.find(
+          (p) => p.name.toLowerCase() === planName.toLowerCase()
+        );
+        if (plan) {
+          router.replace("/tariffs");
+          handlePayment(plan, user.email);
+        }
+      }
     };
     check();
-  }, []);
+  }, [searchParams]);
 
-  const handlePayment = async (plan: Plan) => {
-    // Если не залогинен — отправляем на регистрацию
-    if (!user) {
-      router.push("/signup");
-      return;
-    }
+  const handlePayment = async (plan: Plan, userEmail?: string) => {
+    const finalEmail = userEmail || email;
 
-    if (!email || !email.includes("@")) {
+    if (!finalEmail || !finalEmail.includes("@")) {
       alert("Введите корректный email — на него придёт чек.");
       return;
     }
@@ -91,7 +101,7 @@ export default function TariffsPage() {
           amount: plan.price,
           orderId,
           description: `Подписка «${plan.name}»`,
-          email,
+          email: finalEmail,
         }),
       });
 
@@ -107,6 +117,14 @@ export default function TariffsPage() {
       setLoading(null);
       alert("Ошибка сети: " + e);
     }
+  };
+
+  const handleStart = (plan: Plan) => {
+    if (!user) {
+      router.push(`/signup?plan=${encodeURIComponent(plan.name.toLowerCase())}`);
+      return;
+    }
+    handlePayment(plan);
   };
 
   if (checkingAuth) {
@@ -164,7 +182,7 @@ export default function TariffsPage() {
               </ul>
 
               <button
-                onClick={() => handlePayment(plan)}
+                onClick={() => handleStart(plan)}
                 disabled={loading === plan.name}
                 className={`w-full py-3 rounded-lg font-semibold transition ${
                   plan.popular
@@ -179,5 +197,13 @@ export default function TariffsPage() {
         </div>
       </div>
     </section>
+  );
+}
+
+export default function TariffsPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#0a0a0a]" />}>
+      <TariffsContent />
+    </Suspense>
   );
 }

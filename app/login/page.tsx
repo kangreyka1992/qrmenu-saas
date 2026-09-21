@@ -1,12 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -35,7 +37,6 @@ export default function LoginPage() {
       return;
     }
 
-    // Проверяем, админ ли пользователь
     const { data: profile } = await supabase
       .from("profiles")
       .select("is_admin")
@@ -44,10 +45,14 @@ export default function LoginPage() {
 
     setLoading(false);
 
+    const plan = searchParams.get("plan");
+
     if (profile?.is_admin) {
-      router.push("/admin");
+      router.push("/dashboard");
+    } else if (plan) {
+      router.push(`/tariffs?plan=${encodeURIComponent(plan)}&autoPay=1`);
     } else {
-      router.push("/#tariffs"); // главная с тарифами
+      router.push("/tariffs");
     }
   };
 
@@ -99,5 +104,13 @@ export default function LoginPage() {
         </p>
       </form>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#0a0a0a]" />}>
+      <LoginContent />
+    </Suspense>
   );
 }
