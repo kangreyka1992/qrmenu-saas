@@ -1,50 +1,67 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
-import Link from 'next/link'
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 
-export default function SignUpPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const router = useRouter()
-  const supabase = createClient()
+export default function SignupPage() {
+  const router = useRouter();
+  const supabase = createClient();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
+    e.preventDefault();
+    setLoading(true);
+    setError("");
 
-    const { error } = await supabase.auth.signUp({ email, password })
+    const { data, error: signUpError } = await supabase.auth.signUp({
+      email,
+      password,
+    });
 
-    if (error) {
-      setError(error.message)
-      setLoading(false)
-      return
+    if (signUpError) {
+      setError(signUpError.message);
+      setLoading(false);
+      return;
     }
 
-    router.push('/dashboard')
-    router.refresh()
-  }
+    // Если Supabase требует подтверждение email — data.user может быть null
+    if (!data.user) {
+      setLoading(false);
+      alert("Проверьте почту — нужно подтвердить email.");
+      router.push("/login");
+      return;
+    }
+
+    // Проверяем профиль (новый пользователь точно не админ)
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("is_admin")
+      .eq("id", data.user.id)
+      .single();
+
+    setLoading(false);
+
+    if (profile?.is_admin) {
+      router.push("/admin");
+    } else {
+      router.push("/#tariffs");
+    }
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0a0e14] px-4">
+    <div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center px-4">
       <form
         onSubmit={handleSignup}
-        className="w-full max-w-md bg-[#1a1d24] p-8 rounded-2xl border border-white/10"
+        className="w-full max-w-md bg-[#111] p-8 rounded-2xl border border-gray-800"
       >
-        <h1 className="text-2xl font-black text-white mb-2 text-center">
-          Регистрация
-        </h1>
-        <p className="text-center text-[#8a92a3] text-sm mb-6">
-          14 дней бесплатно. Без карты.
-        </p>
+        <h1 className="text-3xl font-bold mb-6 text-center">Регистрация</h1>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm">
+          <div className="mb-4 p-3 bg-red-900/40 border border-red-700 rounded-lg text-sm">
             {error}
           </div>
         )}
@@ -55,40 +72,34 @@ export default function SignUpPage() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="w-full px-4 py-3 bg-[#0a0e14] border border-white/10 rounded-lg text-white mb-3 outline-none focus:border-[#ff9b26]"
+          className="w-full px-4 py-3 mb-3 rounded-lg bg-[#1a1a1a] border border-gray-700 focus:border-orange-500 outline-none"
         />
 
         <input
           type="password"
-          placeholder="Пароль (минимум 6 символов)"
+          placeholder="Пароль (мин. 6 символов)"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
           minLength={6}
-          className="w-full px-4 py-3 bg-[#0a0e14] border border-white/10 rounded-lg text-white mb-4 outline-none focus:border-[#ff9b26]"
+          className="w-full px-4 py-3 mb-6 rounded-lg bg-[#1a1a1a] border border-gray-700 focus:border-orange-500 outline-none"
         />
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-3 bg-gradient-to-r from-[#ff9b26] to-[#e07a00] text-black font-bold rounded-lg disabled:opacity-50"
+          className="w-full py-3 bg-orange-500 hover:bg-orange-600 text-black font-semibold rounded-lg disabled:opacity-50"
         >
-          {loading ? 'Создаём аккаунт...' : 'Создать аккаунт'}
+          {loading ? "Создаём аккаунт..." : "Зарегистрироваться"}
         </button>
 
-        <p className="text-center text-[#8a92a3] text-sm mt-4">
-          Уже есть аккаунт?{' '}
-          <Link href="/login" className="text-[#ff9b26] font-bold">
+        <p className="text-center text-sm text-gray-500 mt-4">
+          Уже есть аккаунт?{" "}
+          <a href="/login" className="text-orange-500 hover:underline">
             Войти
-          </Link>
-        </p>
-
-        <p className="text-center mt-4">
-          <Link href="/" className="text-[#8a92a3] text-xs">
-            ← На главную
-          </Link>
+          </a>
         </p>
       </form>
     </div>
-  )
+  );
 }

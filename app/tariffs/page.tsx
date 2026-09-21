@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 
 type Plan = {
   name: string;
@@ -47,10 +49,32 @@ const plans: Plan[] = [
 ];
 
 export default function TariffsPage() {
+  const router = useRouter();
+  const supabase = createClient();
+
   const [loading, setLoading] = useState<string | null>(null);
   const [email, setEmail] = useState("");
+  const [user, setUser] = useState<any>(null);
+  const [checkingAuth, setCheckingAuth] = useState(true);
+
+  // Проверяем, залогинен ли пользователь
+  useEffect(() => {
+    const check = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+      if (user?.email) setEmail(user.email);
+      setCheckingAuth(false);
+    };
+    check();
+  }, []);
 
   const handlePayment = async (plan: Plan) => {
+    // Если не залогинен — отправляем на регистрацию
+    if (!user) {
+      router.push("/signup");
+      return;
+    }
+
     if (!email || !email.includes("@")) {
       alert("Введите корректный email — на него придёт чек.");
       return;
@@ -85,12 +109,19 @@ export default function TariffsPage() {
     }
   };
 
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center">
+        <p className="text-gray-500">Загрузка...</p>
+      </div>
+    );
+  }
+
   return (
-    <section className="min-h-screen bg-[#0a0a0a] text-white px-4 py-20">
+    <section id="tariffs" className="min-h-screen bg-[#0a0a0a] text-white px-4 py-20">
       <div className="max-w-6xl mx-auto">
         <h1 className="text-5xl font-bold text-center mb-4">Тарифы</h1>
 
-        {/* Поле email — нужно для чека от Робокассы */}
         <div className="max-w-md mx-auto mb-12">
           <input
             type="email"
