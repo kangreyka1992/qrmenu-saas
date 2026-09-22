@@ -7,7 +7,6 @@ const supabaseAdmin = createClient(
 )
 
 export async function GET(request: NextRequest) {
-  // Проверка секрета, чтобы cron мог вызвать только Vercel
   const authHeader = request.headers.get('authorization')
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -17,7 +16,6 @@ export async function GET(request: NextRequest) {
     Date.now() - 15 * 60 * 1000
   ).toISOString()
 
-  // Отменяем неоплаченные онлайн-заказы старше 15 минут
   const { data, error } = await supabaseAdmin
     .from('orders')
     .update({
