@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import crypto from 'crypto'
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -12,7 +11,6 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // ВАЖНО: await params в Next.js 15
     const { id } = await params
 
     if (!id) {
@@ -30,65 +28,68 @@ export async function POST(
       return NextResponse.json({ error: 'Order not found' }, { status: 404 })
     }
 
-    const merchantLogin = process.env.ROBOKASSA_MERCHANT_LOGIN
-    const password1 = process.env.ROBOKASSA_PASSWORD_1
-    const isTest = process.env.ROBOKASSA_TEST_MODE === '1'
+    const shopId = process.env.YOOKASSA_SHOP_ID
+    const secretKey = process.env.YOOKASSA_SECRET_KEY
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL
 
-    if (!merchantLogin || !password1) {
+    if (!shopId || !secretKey || !appUrl) {
       return NextResponse.json(
-        { error: 'Robokassa credentials not configured' },
+        { error: 'YooKassa credentials not configured' },
         { status: 500 }
       )
     }
 
-    // InvId для Робокассы — уникальный числовой ID
-    // Берём timestamp + последние цифры UUID заказа
-    const invId = (
-      Date.now().toString().slice(-8) +
-      id.replace(/\D/g, '').slice(-2)
-    ).slice(0, 10)
+    // Создаём платёж в ЮKassa
+    const idempotenceKey = `${order.id}-${Date.now()}`
 
-    // Сохраняем inv_id в заказ, чтобы вебхук мог найти заказ
-    const { error: updateError } = await supabaseAdmin
-      .from('orders')
-      .update({ robokassa_inv_id: invId })
-      .eq('id', order.id)
-
-    if (updateError) {
-      console.error('Failed to save robokassa_inv_id:', updateError)
-      return NextResponse.json(
-        { error: 'Failed to prepare payment' },
-        { status: 500 }
-      )
+    const paymentBody = {
+      amount: {
+        value: order.total_amount.toFixed(2),
+        currency: 'RUB',
+      },
+      capture: true,
+      confirmation: {
+        type: 'redirect',
+        return_url: `${appUrl}/payment/success`,
+      },
+      description: `Оплата заказа №${order.id.slice(0, 8).toUpperCase()}`,
+      metadata: {
+        order_id: order.id,
+      },
     }
 
-    // Подпись: MerchantLogin:OutSum:InvId:Пароль#1
-    const signatureBase = `${merchantLogin}:${order.total_amount}:${invId}:${password1}`
-    const signature = crypto
-      .createHash('md5')
-      .update(signatureBase)
-      .digest('hex')
+    const auth = Buffer.from(`${shopId}:${secretKey}`).toString('base64')
 
-const baseUrl = 'https://auth.robokassa.ru/Merchant/Index.aspx'
-// isTest передаётся только через параметр IsTest=1
-
-
-    const urlParams = new URLSearchParams({
-      MerchantLogin: merchantLogin,
-      OutSum: order.total_amount.toString(),
-      InvId: invId,
-      Description: `Заказ №${invId}`,
-      SignatureValue: signature,
-      Culture: 'ru',
+    const res = await fetch('https://api.yookassa.ru/v3/payments', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Idempotence-Key': idempotenceKey,
+        Authorization: `Basic ${auth}`,
+      },
+      body: JSON.stringify(paymentBody),
     })
 
-    if (isTest) {
-      urlParams.append('IsTest', '1')
+    const data = await res.json()
+
+    if (!res.ok) {
+      console.error('YooKassa API error:', data)
+      return NextResponse.json(
+        { error: data.description || 'Не удалось создать платёж' },
+        { status: 500 }
+      )
     }
 
-    const paymentUrl = `${baseUrl}?${urlParams.toString()}`
+    // Сохраняем ID платежа ЮKassa в заказ для вебхука
+    await supabaseAdmin
+      .from('orders')
+      .update({ robokassa_inv_id: data.id })
+      .eq('id', order.id)
 
-    return NextResponse.json({ paymentUrl, invId })
+    return NextResponse.json({
+      paymentUrl: data.confirmation.confirmation_url,
+      paymentId: data.id,
+    })
   } catch (error: any) {
     console.error('Payment error:', error)
     return NextResponse.json(

@@ -71,13 +71,12 @@ export default function CartModal({
 
         if (payData.paymentUrl) {
           clearCart()
-          window.location.href = payData.paymentUrl
+          window.location.href = payData.paymentUrl   // ← редирект на ЮKassa
           return
         } else {
           throw new Error(payData.error || 'Не удалось создать оплату')
         }
       }
-
       // Оплата на месте — показываем "Готово"
       setStep('done')
       setLoading(false)
