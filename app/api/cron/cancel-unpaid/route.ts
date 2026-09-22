@@ -7,15 +7,17 @@ const supabaseAdmin = createClient(
 )
 
 export async function GET(request: NextRequest) {
-  // Проверка секретного токена (чтобы никто не мог вызвать)
+  // Проверка секрета, чтобы cron мог вызвать только Vercel
   const authHeader = request.headers.get('authorization')
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString()
+  const fifteenMinutesAgo = new Date(
+    Date.now() - 15 * 60 * 1000
+  ).toISOString()
 
-  // Отменяем неоплаченные заказы старше 15 минут
+  // Отменяем неоплаченные онлайн-заказы старше 15 минут
   const { data, error } = await supabaseAdmin
     .from('orders')
     .update({
@@ -26,7 +28,7 @@ export async function GET(request: NextRequest) {
     .eq('status', 'new')
     .eq('payment_method', 'online')
     .lt('created_at', fifteenMinutesAgo)
-    .select()
+    .select('id, customer_name, total_amount')
 
   if (error) {
     console.error('Cron cancel error:', error)
@@ -34,5 +36,10 @@ export async function GET(request: NextRequest) {
   }
 
   console.log(`Cancelled ${data?.length || 0} unpaid orders`)
-  return NextResponse.json({ ok: true, cancelled: data?.length || 0 })
+
+  return NextResponse.json({
+    ok: true,
+    cancelled: data?.length || 0,
+    orders: data?.map((o) => o.id) || [],
+  })
 }
