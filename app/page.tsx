@@ -198,35 +198,6 @@ export default function Home() {
           </FadeUp>
         </div>
       </section>
-
-      {/* ═══ FOOTER ═══ */}
-      <footer className="px-5 py-8 border-t border-white/5">
-        <div className="max-w-5xl mx-auto flex flex-wrap justify-between items-center gap-4 text-sm text-[#8a92a3]">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#ff9b26] to-[#e07a00] flex items-center justify-center text-sm">
-              🎰
-            </div>
-            <span>© {new Date().getFullYear()} QRMenu</span>
-          </div>
-          <div className="flex flex-wrap gap-4">
-            <Link href="/offer" className="hover:text-white transition-colors">
-              Оферта
-            </Link>
-            <Link href="/privacy" className="hover:text-white transition-colors">
-              Политика конфиденциальности
-            </Link>
-            <Link href="/requisites" className="hover:text-white transition-colors">
-              Реквизиты
-            </Link>
-            <a
-              href="https://t.me/Welcomedse"
-              className="hover:text-white transition-colors"
-            >
-              Поддержка
-            </a>
-          </div>
-        </div>
-      </footer>
     </div>
   )
 }
