@@ -8,11 +8,13 @@ export default function CartModal({
   primaryColor,
   slug,
   restaurantName,
+  tableNumber,
 }: {
   onClose: () => void
   primaryColor: string
   slug: string
   restaurantName: string
+  tableNumber?: string | null
 }) {
   const { items, updateQuantity, removeItem, totalAmount, clearCart } = useCart()
   const [step, setStep] = useState<'cart' | 'form' | 'done'>('cart')
@@ -20,58 +22,52 @@ export default function CartModal({
   const [phone, setPhone] = useState('')
   const [comment, setComment] = useState('')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   async function submitOrder() {
     if (!name.trim() || !phone.trim()) {
-      alert('Заполните имя и телефон')
+      setError('Заполните имя и телефон')
       return
     }
 
     setLoading(true)
+    setError('')
 
     try {
-      console.log('📤 Отправляем заказ...')
-
       const res = await fetch('/api/orders/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           slug,
-          customer_name: name,
-          customer_phone: phone,
-          customer_comment: comment,
+          customer_name: name.trim(),
+          customer_phone: phone.trim(),
+          customer_comment: comment.trim() || null,
+          table_number: tableNumber || null,
           items: items.map((i) => ({
             dish_id: i.id,
             dish_name: i.name,
-            dish_price: i.price,
+            price: i.price,          // ← было dish_price
             quantity: i.quantity,
           })),
         }),
       })
 
-      console.log('📥 Статус ответа:', res.status)
-
       const data = await res.json()
-      console.log('📦 Данные:', data)
 
       if (!res.ok) {
         throw new Error(data.error || 'Ошибка сервера')
       }
 
-      console.log('✅ Заказ создан, очищаем корзину')
-
-      // Сначала меняем step, потом очищаем корзину
       setStep('done')
       setLoading(false)
 
-      // Очищаем корзину в отдельном тике
+      // Очищаем корзину после показа экрана "Готово"
       setTimeout(() => {
         clearCart()
-        console.log('✅ Корзина очищена')
       }, 100)
     } catch (err: any) {
-      console.error('❌ Ошибка:', err)
-      alert('Ошибка: ' + err.message)
+      console.error('Order error:', err)
+      setError(err.message || 'Не удалось отправить заказ')
       setLoading(false)
     }
   }
@@ -189,6 +185,12 @@ export default function CartModal({
                 className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-gray-400 text-gray-900 resize-none"
               />
             </div>
+
+            {error && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
+                {error}
+              </div>
+            )}
 
             <div className="flex justify-between items-center py-2 text-lg font-black text-gray-900">
               <span>Итого:</span>

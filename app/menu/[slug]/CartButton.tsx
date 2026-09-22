@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { useCart } from './CartContext'
 import CartModal from './CartModal'
 
@@ -15,6 +16,8 @@ export default function CartButton({
 }) {
   const { totalItems, totalAmount } = useCart()
   const [open, setOpen] = useState(false)
+  const searchParams = useSearchParams()
+  const tableNumber = searchParams.get('table')
 
   function closeModal() {
     setOpen(false)
@@ -40,13 +43,14 @@ export default function CartButton({
         </button>
       )}
 
-      {/* Модалка — показывается если open === true, вне зависимости от корзины */}
+      {/* Модалка */}
       {open && (
         <CartModal
           onClose={closeModal}
           primaryColor={primaryColor}
           slug={slug}
           restaurantName={restaurantName}
+          tableNumber={tableNumber}
         />
       )}
     </>

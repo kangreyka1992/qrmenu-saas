@@ -9,25 +9,33 @@ const supabaseAdmin = createClient(
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { slug, customer_name, customer_phone, customer_comment, items } = body
+    const {
+      slug,
+      customer_name,
+      customer_phone,
+      customer_comment,
+      table_number,
+      items,
+    } = body
 
     if (!slug || !customer_name || !customer_phone || !items?.length) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
     }
 
     // Находим ресторан по slug
-    const { data: restaurant } = await supabaseAdmin
+    const { data: restaurant, error: restaurantError } = await supabaseAdmin
       .from('restaurants')
       .select('id, name, telegram_chat_id')
       .eq('slug', slug)
       .single()
 
-    if (!restaurant) {
+    if (restaurantError || !restaurant) {
       return NextResponse.json({ error: 'Restaurant not found' }, { status: 404 })
     }
 
+    // Считаем сумму (используем price, а не dish_price)
     const total_amount = items.reduce(
-      (sum: number, i: any) => sum + i.dish_price * i.quantity,
+      (sum: number, i: any) => sum + i.price * i.quantity,
       0
     )
 
@@ -39,26 +47,32 @@ export async function POST(request: NextRequest) {
         customer_name,
         customer_phone,
         customer_comment: customer_comment || null,
+        table_number: table_number || null,
         total_amount,
         status: 'new',
+        payment_status: 'unpaid',
       })
       .select()
       .single()
 
     if (orderError) throw orderError
 
-    // Создаём позиции
-    await supabaseAdmin.from('order_items').insert(
-      items.map((i: any) => ({
-        order_id: order.id,
-        dish_id: i.dish_id,
-        dish_name: i.dish_name,
-        dish_price: i.dish_price,
-        quantity: i.quantity,
-      }))
-    )
+    // Создаём позиции (колонка price, а не dish_price)
+    const { error: itemsError } = await supabaseAdmin
+      .from('order_items')
+      .insert(
+        items.map((i: any) => ({
+          order_id: order.id,
+          dish_id: i.dish_id || null,
+          dish_name: i.dish_name,
+          price: i.price,
+          quantity: i.quantity,
+        }))
+      )
 
-    // Отправляем уведомление в Telegram
+    if (itemsError) throw itemsError
+
+    // Отправляем уведомление в Telegram (если chat_id задан)
     if (restaurant.telegram_chat_id) {
       await sendTelegramNotification(
         restaurant.telegram_chat_id,
@@ -67,12 +81,13 @@ export async function POST(request: NextRequest) {
         customer_name,
         customer_phone,
         customer_comment,
+        table_number,
         total_amount,
         items
       ).catch((e) => console.error('Telegram error:', e))
     }
 
-    return NextResponse.json({ ok: true, order_id: order.id })
+    return NextResponse.json({ ok: true, order_id: order.id, total: total_amount })
   } catch (error: any) {
     console.error('Order error:', error)
     return NextResponse.json({ error: error.message }, { status: 500 })
@@ -85,21 +100,29 @@ async function sendTelegramNotification(
   restaurantName: string,
   customerName: string,
   customerPhone: string,
-  comment: string,
+  comment: string | null,
+  tableNumber: string | null,
   total: number,
   items: any[]
 ) {
-  const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8602932446:AAG_aVvoLz6CjhwfTP8sL9JKAoRK0tcGk_Q'
+  const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN
+
+  if (!BOT_TOKEN) {
+    console.warn('TELEGRAM_BOT_TOKEN не задан — уведомление не отправлено')
+    return
+  }
 
   const itemsText = items
-    .map((i) => `  ${i.quantity}× ${i.dish_name} — ${i.dish_price * i.quantity} ₽`)
+    .map((i) => `  ${i.quantity}× ${i.dish_name} — ${i.price * i.quantity} ₽`)
     .join('\n')
 
+  const shortId = orderId.slice(0, 8).toUpperCase()
+
   const message = `
-🔔 <b>НОВЫЙ ЗАКАЗ!</b>
+🔔 <b>НОВЫЙ ЗАКАЗ #${shortId}</b>
 
 📍 ${restaurantName}
-
+${tableNumber ? `🪑 Стол: <b>${tableNumber}</b>\n` : ''}
 👤 <b>${customerName}</b>
 📞 ${customerPhone}
 
