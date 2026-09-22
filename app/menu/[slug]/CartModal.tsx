@@ -17,7 +17,9 @@ export default function CartModal({
   tableNumber?: string | null
 }) {
   const { items, updateQuantity, removeItem, totalAmount, clearCart } = useCart()
-  const [step, setStep] = useState<'cart' | 'form' | 'done'>('cart')
+  const [step, setStep] = useState<
+    'cart' | 'form' | 'done' | 'waiting_payment' | 'cancelled'
+  >('cart')
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
   const [comment, setComment] = useState('')
@@ -26,6 +28,7 @@ export default function CartModal({
   )
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [pendingOrderId, setPendingOrderId] = useState<string | null>(null)
 
   async function submitOrder() {
     if (!name.trim() || !phone.trim()) {
@@ -62,7 +65,7 @@ export default function CartModal({
         throw new Error(data.error || 'Ошибка сервера')
       }
 
-      // Онлайн-оплата — редирект на Робокассу
+      // ═══ ОНЛАЙН-ОПЛАТА ═══
       if (paymentMethod === 'online' && data.order_id) {
         const payRes = await fetch(`/api/orders/${data.order_id}/pay`, {
           method: 'POST',
@@ -70,14 +73,18 @@ export default function CartModal({
         const payData = await payRes.json()
 
         if (payData.paymentUrl) {
-          clearCart()
-          window.location.href = payData.paymentUrl   // ← редирект на ЮKassa
+          setPendingOrderId(data.order_id)
+          setStep('waiting_payment')
+          setLoading(false)
+          // Открываем ЮKassa в новой вкладке
+          window.open(payData.paymentUrl, '_blank')
           return
         } else {
           throw new Error(payData.error || 'Не удалось создать оплату')
         }
       }
-      // Оплата на месте — показываем "Готово"
+
+      // ═══ ОПЛАТА НА МЕСТЕ ═══
       setStep('done')
       setLoading(false)
 
@@ -91,6 +98,28 @@ export default function CartModal({
     }
   }
 
+  async function cancelOrder() {
+    if (!pendingOrderId) {
+      // Если заказ ещё не создан — просто закрываем
+      setStep('cancelled')
+      setTimeout(() => clearCart(), 100)
+      return
+    }
+
+    setLoading(true)
+    try {
+      await fetch(`/api/orders/${pendingOrderId}/cancel`, {
+        method: 'POST',
+      })
+      setStep('cancelled')
+      setLoading(false)
+      setTimeout(() => clearCart(), 100)
+    } catch (e) {
+      setError('Не удалось отменить заказ')
+      setLoading(false)
+    }
+  }
+
   return (
     <div className="fixed inset-0 z-50 bg-black/60 flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div className="bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl max-h-[90vh] overflow-y-auto">
@@ -100,6 +129,8 @@ export default function CartModal({
             {step === 'cart' && '🛒 Корзина'}
             {step === 'form' && '📝 Оформление'}
             {step === 'done' && '✅ Заказ принят'}
+            {step === 'waiting_payment' && '💳 Ожидаем оплату'}
+            {step === 'cancelled' && '🚫 Заказ отменён'}
           </h2>
           <button
             onClick={onClose}
@@ -250,7 +281,7 @@ export default function CartModal({
                     💳 Онлайн (картой)
                   </div>
                   <div className="text-xs text-gray-500 mt-1">
-                    Оплата через Робокассу
+                    Оплата через ЮKassa
                   </div>
                 </button>
               </div>
@@ -291,6 +322,43 @@ export default function CartModal({
           </div>
         )}
 
+        {/* ═══ WAITING PAYMENT ═══ */}
+        {step === 'waiting_payment' && (
+          <div className="p-8 text-center">
+            <div className="text-6xl mb-4">⏳</div>
+            <h3 className="text-xl font-black text-gray-900 mb-2">
+              Ожидаем оплату
+            </h3>
+            <p className="text-sm text-gray-500 mb-6">
+              Мы открыли страницу ЮKassa в новой вкладке. Оплатите заказ и
+              вернитесь сюда.
+            </p>
+
+            <div className="space-y-2">
+              <button
+                onClick={onClose}
+                className="w-full py-4 rounded-xl text-white font-bold"
+                style={{ background: primaryColor }}
+              >
+                ✅ Я оплатил
+              </button>
+              <button
+                onClick={cancelOrder}
+                disabled={loading}
+                className="w-full py-3 rounded-xl bg-gray-100 text-gray-700 font-bold disabled:opacity-50"
+              >
+                {loading ? 'Отменяем...' : '✕ Отменить заказ'}
+              </button>
+            </div>
+
+            {error && (
+              <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
+                {error}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* ═══ DONE ═══ */}
         {step === 'done' && (
           <div className="p-8 text-center">
@@ -301,6 +369,26 @@ export default function CartModal({
             <p className="text-sm text-gray-500 mb-6">
               {restaurantName} свяжется с вами в течение 5 минут для
               подтверждения.
+            </p>
+            <button
+              onClick={onClose}
+              className="w-full py-4 rounded-xl text-white font-bold"
+              style={{ background: primaryColor }}
+            >
+              Закрыть
+            </button>
+          </div>
+        )}
+
+        {/* ═══ CANCELLED ═══ */}
+        {step === 'cancelled' && (
+          <div className="p-8 text-center">
+            <div className="text-6xl mb-4">🚫</div>
+            <h3 className="text-xl font-black text-gray-900 mb-2">
+              Заказ отменён
+            </h3>
+            <p className="text-sm text-gray-500 mb-6">
+              Вы можете оформить новый заказ.
             </p>
             <button
               onClick={onClose}
