@@ -9,7 +9,6 @@ const supabaseAdmin = createClient(
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-
     const event = body.event
     const payment = body.object
 
@@ -23,7 +22,6 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ ok: false }, { status: 400 })
       }
 
-      // Обновляем заказ
       const { error } = await supabaseAdmin
         .from('orders')
         .update({
@@ -43,7 +41,6 @@ export async function POST(request: NextRequest) {
 
     if (event === 'payment.canceled') {
       const orderId = payment?.metadata?.order_id
-
       if (orderId) {
         await supabaseAdmin
           .from('orders')
@@ -60,4 +57,9 @@ export async function POST(request: NextRequest) {
     console.error('YooKassa webhook error:', error)
     return NextResponse.json({ ok: false }, { status: 500 })
   }
+}
+
+// GET нужен, чтобы проверить, что роут существует
+export async function GET() {
+  return NextResponse.json({ status: 'YooKassa webhook is alive' })
 }
