@@ -177,7 +177,7 @@ export default function SettingsForm({ restaurant }: { restaurant: any }) {
         <input
           name="telegram_chat_id"
           defaultValue={restaurant.telegram_chat_id || ''}
-          placeholder="Например: 123456789"
+          placeholder="Например: 7643224285"
           className="w-full px-4 py-3 bg-[#0a0e14] border border-white/10 rounded-lg text-white outline-none focus:border-[#ff9b26]"
         />
         <p className="text-xs text-[#5a6373] mt-2">

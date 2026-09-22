@@ -21,6 +21,9 @@ export default function CartModal({
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
   const [comment, setComment] = useState('')
+  const [paymentMethod, setPaymentMethod] = useState<'at_venue' | 'online'>(
+    'at_venue'
+  )
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -43,10 +46,11 @@ export default function CartModal({
           customer_phone: phone.trim(),
           customer_comment: comment.trim() || null,
           table_number: tableNumber || null,
+          payment_method: paymentMethod,
           items: items.map((i) => ({
             dish_id: i.id,
             dish_name: i.name,
-            price: i.price,          // ← было dish_price
+            price: i.price,
             quantity: i.quantity,
           })),
         }),
@@ -58,10 +62,26 @@ export default function CartModal({
         throw new Error(data.error || 'Ошибка сервера')
       }
 
+      // Онлайн-оплата — редирект на Робокассу
+      if (paymentMethod === 'online' && data.order_id) {
+        const payRes = await fetch(`/api/orders/${data.order_id}/pay`, {
+          method: 'POST',
+        })
+        const payData = await payRes.json()
+
+        if (payData.paymentUrl) {
+          clearCart()
+          window.location.href = payData.paymentUrl
+          return
+        } else {
+          throw new Error(payData.error || 'Не удалось создать оплату')
+        }
+      }
+
+      // Оплата на месте — показываем "Готово"
       setStep('done')
       setLoading(false)
 
-      // Очищаем корзину после показа экрана "Готово"
       setTimeout(() => {
         clearCart()
       }, 100)
@@ -101,16 +121,23 @@ export default function CartModal({
             ) : (
               <>
                 {items.map((item) => (
-                  <div key={item.id} className="flex items-center gap-3 py-3 border-b">
+                  <div
+                    key={item.id}
+                    className="flex items-center gap-3 py-3 border-b"
+                  >
                     <div className="flex-1 min-w-0">
                       <div className="font-bold text-sm text-gray-900">
                         {item.name}
                       </div>
-                      <div className="text-xs text-gray-500">{item.price} ₽</div>
+                      <div className="text-xs text-gray-500">
+                        {item.price} ₽
+                      </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <button
-                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                        onClick={() =>
+                          updateQuantity(item.id, item.quantity - 1)
+                        }
                         className="w-9 h-9 rounded-lg bg-gray-100 text-gray-700 font-bold text-lg"
                       >
                         −
@@ -119,7 +146,9 @@ export default function CartModal({
                         {item.quantity}
                       </span>
                       <button
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                        onClick={() =>
+                          updateQuantity(item.id, item.quantity + 1)
+                        }
                         className="w-9 h-9 rounded-lg text-white font-bold text-lg"
                         style={{ background: primaryColor }}
                       >
@@ -161,6 +190,7 @@ export default function CartModal({
                 className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-gray-400 text-gray-900"
               />
             </div>
+
             <div>
               <label className="block text-sm text-gray-500 mb-1">
                 Телефон *
@@ -173,6 +203,7 @@ export default function CartModal({
                 className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-gray-400 text-gray-900"
               />
             </div>
+
             <div>
               <label className="block text-sm text-gray-500 mb-1">
                 Комментарий
@@ -184,6 +215,46 @@ export default function CartModal({
                 rows={3}
                 className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-gray-400 text-gray-900 resize-none"
               />
+            </div>
+
+            {/* Способ оплаты */}
+            <div>
+              <label className="block text-sm text-gray-500 mb-2">
+                Способ оплаты
+              </label>
+              <div className="space-y-2">
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('at_venue')}
+                  className={`w-full p-4 rounded-xl border-2 text-left transition ${
+                    paymentMethod === 'at_venue'
+                      ? 'border-orange-500 bg-orange-50'
+                      : 'border-gray-200 bg-white'
+                  }`}
+                >
+                  <div className="font-bold text-gray-900">💵 На месте</div>
+                  <div className="text-xs text-gray-500 mt-1">
+                    Оплатите официанту или на кассе
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('online')}
+                  className={`w-full p-4 rounded-xl border-2 text-left transition ${
+                    paymentMethod === 'online'
+                      ? 'border-orange-500 bg-orange-50'
+                      : 'border-gray-200 bg-white'
+                  }`}
+                >
+                  <div className="font-bold text-gray-900">
+                    💳 Онлайн (картой)
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1">
+                    Оплата через Робокассу
+                  </div>
+                </button>
+              </div>
             </div>
 
             {error && (
@@ -200,7 +271,8 @@ export default function CartModal({
             <div className="flex gap-2">
               <button
                 onClick={() => setStep('cart')}
-                className="flex-1 py-4 rounded-xl bg-gray-100 text-gray-700 font-bold"
+                disabled={loading}
+                className="flex-1 py-4 rounded-xl bg-gray-100 text-gray-700 font-bold disabled:opacity-50"
               >
                 ← Назад
               </button>
@@ -210,7 +282,11 @@ export default function CartModal({
                 className="flex-1 py-4 rounded-xl text-white font-bold disabled:opacity-50"
                 style={{ background: primaryColor }}
               >
-                {loading ? 'Отправка...' : 'Заказать ✓'}
+                {loading
+                  ? 'Отправка...'
+                  : paymentMethod === 'online'
+                  ? 'Оплатить →'
+                  : 'Заказать ✓'}
               </button>
             </div>
           </div>

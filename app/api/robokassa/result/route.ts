@@ -48,18 +48,18 @@ export async function POST(req: NextRequest) {
 
     // Обновляем статус заказа в Supabase
     // ВАЖНО: подставьте правильные названия таблицы и колонок
+    // Ищем заказ по robokassa_inv_id
     const { error } = await supabase
-      .from('orders') // ← замените на название вашей таблицы заказов
+      .from('orders')
       .update({
-        status: 'paid',
-        paid_at: new Date().toISOString(),
-        paid_amount: outSum,
+        payment_status: 'paid',
+        status: 'accepted',
       })
-      .eq('id', invId); // ← и на название колонки с ID заказа
+      .eq('robokassa_inv_id', invId)
 
     if (error) {
-      console.error('Ошибка обновления заказа в Supabase:', error);
-      return new NextResponse('DB error', { status: 500 });
+      console.error('Ошибка обновления заказа:', error)
+      return new NextResponse('DB error', { status: 500 })
     }
 
     // Робокасса ожидает ровно такой ответ — OK + InvId без пробелов

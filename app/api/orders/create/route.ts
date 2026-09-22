@@ -15,6 +15,7 @@ export async function POST(request: NextRequest) {
       customer_phone,
       customer_comment,
       table_number,
+      payment_method,
       items,
     } = body
 
@@ -33,7 +34,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Restaurant not found' }, { status: 404 })
     }
 
-    // Считаем сумму (используем price, а не dish_price)
+    // Считаем сумму
     const total_amount = items.reduce(
       (sum: number, i: any) => sum + i.price * i.quantity,
       0
@@ -51,13 +52,14 @@ export async function POST(request: NextRequest) {
         total_amount,
         status: 'new',
         payment_status: 'unpaid',
+        payment_method: payment_method || 'at_venue',
       })
       .select()
       .single()
 
     if (orderError) throw orderError
 
-    // Создаём позиции (колонка price, а не dish_price)
+    // Создаём позиции
     const { error: itemsError } = await supabaseAdmin
       .from('order_items')
       .insert(
@@ -72,7 +74,7 @@ export async function POST(request: NextRequest) {
 
     if (itemsError) throw itemsError
 
-    // Отправляем уведомление в Telegram (если chat_id задан)
+    // Отправляем уведомление в Telegram
     if (restaurant.telegram_chat_id) {
       await sendTelegramNotification(
         restaurant.telegram_chat_id,
@@ -83,11 +85,16 @@ export async function POST(request: NextRequest) {
         customer_comment,
         table_number,
         total_amount,
+        payment_method || 'at_venue',
         items
       ).catch((e) => console.error('Telegram error:', e))
     }
 
-    return NextResponse.json({ ok: true, order_id: order.id, total: total_amount })
+    return NextResponse.json({
+      ok: true,
+      order_id: order.id,
+      total: total_amount,
+    })
   } catch (error: any) {
     console.error('Order error:', error)
     return NextResponse.json({ error: error.message }, { status: 500 })
@@ -103,6 +110,7 @@ async function sendTelegramNotification(
   comment: string | null,
   tableNumber: string | null,
   total: number,
+  paymentMethod: string,
   items: any[]
 ) {
   const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN
@@ -118,6 +126,11 @@ async function sendTelegramNotification(
 
   const shortId = orderId.slice(0, 8).toUpperCase()
 
+  const paymentLabel =
+    paymentMethod === 'online'
+      ? '💳 Оплата онлайн'
+      : '💵 Оплата на месте'
+
   const message = `
 🔔 <b>НОВЫЙ ЗАКАЗ #${shortId}</b>
 
@@ -132,19 +145,23 @@ ${itemsText}
 
 ━━━━━━━━━━━━━━━
 💰 <b>Итого: ${total} ₽</b>
+${paymentLabel}
 
 Откройте панель управления, чтобы принять заказ.
 `.trim()
 
-  const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      chat_id: chatId,
-      text: message,
-      parse_mode: 'HTML',
-    }),
-  })
+  const res = await fetch(
+    `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: message,
+        parse_mode: 'HTML',
+      }),
+    }
+  )
 
   if (!res.ok) {
     throw new Error(`Telegram API error: ${await res.text()}`)

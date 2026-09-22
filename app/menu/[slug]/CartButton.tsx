@@ -43,7 +43,7 @@ export default function CartButton({
         </button>
       )}
 
-      {/* Модалка */}
+      {/* Модалка оформления заказа */}
       {open && (
         <CartModal
           onClose={closeModal}

@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import { Suspense } from 'react'
 import { isSubscriptionActive } from '@/lib/subscription'
 import ShareButton from './ShareButton'
 import MenuSearch from './MenuSearch'
@@ -102,12 +103,14 @@ export default async function MenuPage({
           primaryColor={primaryColor}
         />
 
-        {/* Плавающая корзина */}
-        <CartButton
-          primaryColor={primaryColor}
-          slug={restaurant.slug}
-          restaurantName={restaurant.name}
-        />
+        {/* Плавающая корзина — ОБЁРНУТА В SUSPENSE */}
+        <Suspense fallback={null}>
+          <CartButton
+            primaryColor={primaryColor}
+            slug={restaurant.slug}
+            restaurantName={restaurant.name}
+          />
+        </Suspense>
 
         {/* Нижние кнопки */}
         <div
