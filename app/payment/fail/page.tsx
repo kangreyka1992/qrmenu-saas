@@ -20,13 +20,6 @@ export default function FailPage() {
           >
             Вернуться на главную
           </Link>
-
-          <button
-            onClick={() => window.history.back()}
-            className="block w-full px-6 py-3 bg-white/5 border border-white/10 text-white font-bold rounded-lg"
-          >
-            ← Попробовать снова
-          </button>
         </div>
       </div>
     </div>
