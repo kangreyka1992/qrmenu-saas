@@ -5,7 +5,6 @@ import { FadeUp, ScaleIn } from './components/HeroAnimations'
 import FAQ from './components/FAQ'
 import PricingCard from './components/PricingCard'
 import HeroStats from './components/HeroStats'
-import LeadForm from './components/LeadForm'
 
 export default function Home() {
   return (
@@ -41,13 +40,12 @@ export default function Home() {
 
           <FadeUp delay={0.3}>
             <div className="flex gap-3 justify-center flex-wrap">
-              <a
-                href="#contact"
+              <Link
+                href="/tariffs"
                 className="group relative px-8 py-4 bg-gradient-to-r from-[#ff9b26] to-[#e07a00] text-black font-bold rounded-xl shadow-lg shadow-[#ff9b26]/30 hover:shadow-xl hover:shadow-[#ff9b26]/50 transition-all hover:scale-105"
               >
-                🚀 Оставить заявку
-                <span className="absolute inset-0 rounded-xl bg-white opacity-0 group-hover:opacity-10 transition-opacity" />
-              </a>
+                🚀 Выбрать тариф
+              </Link>
               <Link
                 href="/demo"
                 className="px-8 py-4 bg-white/5 border border-white/10 text-white font-bold rounded-xl hover:bg-white/10 hover:border-white/20 transition-all"
@@ -132,7 +130,9 @@ export default function Home() {
                     {f.icon}
                   </div>
                   <h3 className="text-lg font-bold mb-2">{f.title}</h3>
-                  <p className="text-sm text-[#8a92a3] leading-relaxed">{f.desc}</p>
+                  <p className="text-sm text-[#8a92a3] leading-relaxed">
+                    {f.desc}
+                  </p>
                 </div>
               </ScaleIn>
             ))}
@@ -147,11 +147,8 @@ export default function Home() {
             <h2 className="text-3xl md:text-5xl font-black text-center mb-4">
               Тарифы
             </h2>
-            <p className="text-center text-[#8a92a3] mb-4 max-w-2xl mx-auto">
+            <p className="text-center text-[#8a92a3] mb-16 max-w-2xl mx-auto">
               Выберите подписку или оплатите один раз — и пользуйтесь навсегда
-            </p>
-            <p className="text-center text-[#ff9b26] font-bold mb-16">
-              🎁 14 дней бесплатно · Без карты
             </p>
           </FadeUp>
 
@@ -204,11 +201,13 @@ export default function Home() {
               </p>
             </div>
             <div className="grid md:grid-cols-3 gap-6">
-              {PLANS.filter((p) => p.type === 'subscription').map((plan, i) => (
-                <ScaleIn key={plan.id} delay={i * 0.1}>
-                  <PricingCard plan={plan} index={i} />
-                </ScaleIn>
-              ))}
+              {PLANS.filter((p) => p.type === 'subscription').map(
+                (plan, i) => (
+                  <ScaleIn key={plan.id} delay={i * 0.1}>
+                    <PricingCard plan={plan} index={i} />
+                  </ScaleIn>
+                )
+              )}
             </div>
           </div>
 
@@ -249,24 +248,34 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ═══ CTA + LEAD FORM ═══ */}
+      {/* ═══ CTA ═══ */}
       <section className="px-5 py-24 border-t border-white/5" id="contact">
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-3xl mx-auto text-center">
           <FadeUp>
-            <h2 className="text-3xl md:text-5xl font-black mb-6 leading-tight text-center">
-              Получите готовое{' '}
+            <h2 className="text-3xl md:text-5xl font-black mb-6 leading-tight">
+              Готовы начать?{' '}
               <span className="bg-gradient-to-r from-[#ff9b26] to-[#ffb84d] bg-clip-text text-transparent">
-                QR-меню за 1 день
+                Создайте QR-меню за 1 день
               </span>
             </h2>
-            <p className="text-lg text-[#8a92a3] mb-10 max-w-lg mx-auto text-center">
-              Оставьте заявку — мы создадим меню, настроим QR-код 
-              и покажем демо. Вам останется только оплатить.
+            <p className="text-lg text-[#8a92a3] mb-10 max-w-lg mx-auto">
+              Выберите тариф, оплатите — и мы сразу свяжемся с вами для
+              настройки меню.
             </p>
-          </FadeUp>
-
-          <FadeUp delay={0.1}>
-            <LeadForm />
+            <div className="flex gap-3 justify-center flex-wrap">
+              <Link
+                href="/tariffs"
+                className="px-8 py-4 bg-gradient-to-r from-[#ff9b26] to-[#e07a00] text-black font-bold rounded-xl shadow-lg shadow-[#ff9b26]/30 hover:shadow-xl hover:shadow-[#ff9b26]/50 transition-all hover:scale-105"
+              >
+                🚀 Выбрать тариф
+              </Link>
+              <Link
+                href="/demo"
+                className="px-8 py-4 bg-white/5 border border-white/10 text-white font-bold rounded-xl hover:bg-white/10 transition-all"
+              >
+                👀 Посмотреть демо
+              </Link>
+            </div>
           </FadeUp>
         </div>
       </section>
