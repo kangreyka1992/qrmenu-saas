@@ -1,58 +1,52 @@
 import { createClient } from '@/lib/supabase/server'
 
-export type SubscriptionStatus = 'trial' | 'active' | 'expired' | 'cancelled'
-
-export interface Subscription {
-  id: string
-  user_id: string
-  plan: string
-  status: SubscriptionStatus
-  trial_ends_at: string | null
-  current_period_ends_at: string | null
-}
-
-export async function getSubscription(userId: string): Promise<Subscription | null> {
+export async function getSubscription(userId: string) {
   const supabase = await createClient()
-
-  const { data, error } = await supabase
+  const { data } = await supabase
     .from('subscriptions')
     .select('*')
     .eq('user_id', userId)
-    .maybeSingle()
-
-  if (error) {
-    console.error('getSubscription error:', error)
-    return null
-  }
-
+    .single()
   return data
 }
 
 export async function isSubscriptionActive(userId: string): Promise<boolean> {
-  const sub = await getSubscription(userId)
+  const supabase = await createClient()
+
+  const { data: sub } = await supabase
+    .from('subscriptions')
+    .select('*')
+    .eq('user_id', userId)
+    .single()
+
   if (!sub) return false
 
-  const now = new Date()
+  // Навсегда — всегда активна
+  if (sub.plan_type === 'lifetime') return true
 
-  if (sub.status === 'trial' && sub.trial_ends_at) {
-    return new Date(sub.trial_ends_at) > now
+  // Подписка — проверяем дату окончания
+  if (sub.status === 'active' && sub.current_period_ends_at) {
+    return new Date(sub.current_period_ends_at) > new Date()
   }
 
-  if (sub.status === 'active' && sub.current_period_ends_at) {
-    return new Date(sub.current_period_ends_at) > now
+  // Триал — проверяем дату
+  if (sub.status === 'trial' && sub.trial_ends_at) {
+    return new Date(sub.trial_ends_at) > new Date()
   }
 
   return false
 }
 
 export async function getTrialDaysLeft(userId: string): Promise<number> {
-  const sub = await getSubscription(userId)
+  const supabase = await createClient()
+  const { data: sub } = await supabase
+    .from('subscriptions')
+    .select('trial_ends_at, status')
+    .eq('user_id', userId)
+    .single()
+
   if (!sub || sub.status !== 'trial' || !sub.trial_ends_at) return 0
 
-  const now = new Date()
-  const trialEnd = new Date(sub.trial_ends_at)
-  const diffMs = trialEnd.getTime() - now.getTime()
-  const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24))
-
-  return Math.max(0, diffDays)
+  const diff = new Date(sub.trial_ends_at).getTime() - Date.now()
+  return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)))
 }

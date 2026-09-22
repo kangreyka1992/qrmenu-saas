@@ -16,19 +16,13 @@ export default function CartModal({
   restaurantName: string
   tableNumber?: string | null
 }) {
-  const { items, updateQuantity, removeItem, totalAmount, clearCart } = useCart()
-  const [step, setStep] = useState<
-    'cart' | 'form' | 'done' | 'waiting_payment' | 'cancelled'
-  >('cart')
+  const { items, updateQuantity, totalAmount, clearCart } = useCart()
+  const [step, setStep] = useState<'cart' | 'form' | 'done'>('cart')
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
   const [comment, setComment] = useState('')
-  const [paymentMethod, setPaymentMethod] = useState<'at_venue' | 'online'>(
-    'at_venue'
-  )
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [pendingOrderId, setPendingOrderId] = useState<string | null>(null)
 
   async function submitOrder() {
     if (!name.trim() || !phone.trim()) {
@@ -49,7 +43,7 @@ export default function CartModal({
           customer_phone: phone.trim(),
           customer_comment: comment.trim() || null,
           table_number: tableNumber || null,
-          payment_method: paymentMethod,
+          payment_method: 'at_venue',
           items: items.map((i) => ({
             dish_id: i.id,
             dish_name: i.name,
@@ -60,37 +54,11 @@ export default function CartModal({
       })
 
       const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Ошибка сервера')
 
-      if (!res.ok) {
-        throw new Error(data.error || 'Ошибка сервера')
-      }
-
-      // ═══ ОНЛАЙН-ОПЛАТА ═══
-      if (paymentMethod === 'online' && data.order_id) {
-        const payRes = await fetch(`/api/orders/${data.order_id}/pay`, {
-          method: 'POST',
-        })
-        const payData = await payRes.json()
-
-        if (payData.paymentUrl) {
-          setPendingOrderId(data.order_id)
-          setStep('waiting_payment')
-          setLoading(false)
-          // Открываем ЮKassa в новой вкладке
-          window.open(payData.paymentUrl, '_blank')
-          return
-        } else {
-          throw new Error(payData.error || 'Не удалось создать оплату')
-        }
-      }
-
-      // ═══ ОПЛАТА НА МЕСТЕ ═══
       setStep('done')
       setLoading(false)
-
-      setTimeout(() => {
-        clearCart()
-      }, 100)
+      setTimeout(() => clearCart(), 100)
     } catch (err: any) {
       console.error('Order error:', err)
       setError(err.message || 'Не удалось отправить заказ')
@@ -98,39 +66,14 @@ export default function CartModal({
     }
   }
 
-  async function cancelOrder() {
-    if (!pendingOrderId) {
-      // Если заказ ещё не создан — просто закрываем
-      setStep('cancelled')
-      setTimeout(() => clearCart(), 100)
-      return
-    }
-
-    setLoading(true)
-    try {
-      await fetch(`/api/orders/${pendingOrderId}/cancel`, {
-        method: 'POST',
-      })
-      setStep('cancelled')
-      setLoading(false)
-      setTimeout(() => clearCart(), 100)
-    } catch (e) {
-      setError('Не удалось отменить заказ')
-      setLoading(false)
-    }
-  }
-
   return (
     <div className="fixed inset-0 z-50 bg-black/60 flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div className="bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl max-h-[90vh] overflow-y-auto">
-        {/* Header */}
         <div className="flex justify-between items-center p-4 border-b sticky top-0 bg-white z-10">
           <h2 className="text-lg font-black text-gray-900">
             {step === 'cart' && '🛒 Корзина'}
             {step === 'form' && '📝 Оформление'}
             {step === 'done' && '✅ Заказ принят'}
-            {step === 'waiting_payment' && '💳 Ожидаем оплату'}
-            {step === 'cancelled' && '🚫 Заказ отменён'}
           </h2>
           <button
             onClick={onClose}
@@ -140,7 +83,6 @@ export default function CartModal({
           </button>
         </div>
 
-        {/* ═══ CART ═══ */}
         {step === 'cart' && (
           <div className="p-4">
             {items.length === 0 ? (
@@ -205,7 +147,6 @@ export default function CartModal({
           </div>
         )}
 
-        {/* ═══ FORM ═══ */}
         {step === 'form' && (
           <div className="p-4 space-y-3">
             <div>
@@ -247,46 +188,6 @@ export default function CartModal({
               />
             </div>
 
-            {/* Способ оплаты */}
-            <div>
-              <label className="block text-sm text-gray-500 mb-2">
-                Способ оплаты
-              </label>
-              <div className="space-y-2">
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod('at_venue')}
-                  className={`w-full p-4 rounded-xl border-2 text-left transition ${
-                    paymentMethod === 'at_venue'
-                      ? 'border-orange-500 bg-orange-50'
-                      : 'border-gray-200 bg-white'
-                  }`}
-                >
-                  <div className="font-bold text-gray-900">💵 На месте</div>
-                  <div className="text-xs text-gray-500 mt-1">
-                    Оплатите официанту или на кассе
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod('online')}
-                  className={`w-full p-4 rounded-xl border-2 text-left transition ${
-                    paymentMethod === 'online'
-                      ? 'border-orange-500 bg-orange-50'
-                      : 'border-gray-200 bg-white'
-                  }`}
-                >
-                  <div className="font-bold text-gray-900">
-                    💳 Онлайн (картой)
-                  </div>
-                  <div className="text-xs text-gray-500 mt-1">
-                    Оплата через ЮKassa
-                  </div>
-                </button>
-              </div>
-            </div>
-
             {error && (
               <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
                 {error}
@@ -297,6 +198,10 @@ export default function CartModal({
               <span>Итого:</span>
               <span style={{ color: primaryColor }}>{totalAmount} ₽</span>
             </div>
+
+            <p className="text-xs text-gray-500 text-center">
+              💵 Оплата на месте — официанту или на кассе
+            </p>
 
             <div className="flex gap-2">
               <button
@@ -312,54 +217,12 @@ export default function CartModal({
                 className="flex-1 py-4 rounded-xl text-white font-bold disabled:opacity-50"
                 style={{ background: primaryColor }}
               >
-                {loading
-                  ? 'Отправка...'
-                  : paymentMethod === 'online'
-                  ? 'Оплатить →'
-                  : 'Заказать ✓'}
+                {loading ? 'Отправка...' : 'Заказать ✓'}
               </button>
             </div>
           </div>
         )}
 
-        {/* ═══ WAITING PAYMENT ═══ */}
-        {step === 'waiting_payment' && (
-          <div className="p-8 text-center">
-            <div className="text-6xl mb-4">⏳</div>
-            <h3 className="text-xl font-black text-gray-900 mb-2">
-              Ожидаем оплату
-            </h3>
-            <p className="text-sm text-gray-500 mb-6">
-              Мы открыли страницу ЮKassa в новой вкладке. Оплатите заказ и
-              вернитесь сюда.
-            </p>
-
-            <div className="space-y-2">
-              <button
-                onClick={onClose}
-                className="w-full py-4 rounded-xl text-white font-bold"
-                style={{ background: primaryColor }}
-              >
-                ✅ Я оплатил
-              </button>
-              <button
-                onClick={cancelOrder}
-                disabled={loading}
-                className="w-full py-3 rounded-xl bg-gray-100 text-gray-700 font-bold disabled:opacity-50"
-              >
-                {loading ? 'Отменяем...' : '✕ Отменить заказ'}
-              </button>
-            </div>
-
-            {error && (
-              <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
-                {error}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ═══ DONE ═══ */}
         {step === 'done' && (
           <div className="p-8 text-center">
             <div className="text-6xl mb-4">✅</div>
@@ -369,26 +232,6 @@ export default function CartModal({
             <p className="text-sm text-gray-500 mb-6">
               {restaurantName} свяжется с вами в течение 5 минут для
               подтверждения.
-            </p>
-            <button
-              onClick={onClose}
-              className="w-full py-4 rounded-xl text-white font-bold"
-              style={{ background: primaryColor }}
-            >
-              Закрыть
-            </button>
-          </div>
-        )}
-
-        {/* ═══ CANCELLED ═══ */}
-        {step === 'cancelled' && (
-          <div className="p-8 text-center">
-            <div className="text-6xl mb-4">🚫</div>
-            <h3 className="text-xl font-black text-gray-900 mb-2">
-              Заказ отменён
-            </h3>
-            <p className="text-sm text-gray-500 mb-6">
-              Вы можете оформить новый заказ.
             </p>
             <button
               onClick={onClose}

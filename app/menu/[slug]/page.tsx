@@ -69,7 +69,6 @@ export default async function MenuPage({
         <TrackView restaurantId={restaurant.id} />
         <LanguageSwitcher />
 
-        {/* Шапка */}
         <div
           className="text-center py-10 px-5 text-white"
           style={{
@@ -97,13 +96,8 @@ export default async function MenuPage({
           )}
         </div>
 
-        {/* Меню */}
-        <MenuSearch
-          categories={sortedCategories}
-          primaryColor={primaryColor}
-        />
+        <MenuSearch categories={sortedCategories} primaryColor={primaryColor} />
 
-        {/* Плавающая корзина — ОБЁРНУТА В SUSPENSE */}
         <Suspense fallback={null}>
           <CartButton
             primaryColor={primaryColor}
@@ -112,7 +106,6 @@ export default async function MenuPage({
           />
         </Suspense>
 
-        {/* Нижние кнопки */}
         <div
           className="fixed bottom-0 left-0 right-0 z-30"
           style={{ maxWidth: 600, margin: '0 auto' }}
@@ -139,7 +132,6 @@ export default async function MenuPage({
           </div>
         </div>
 
-        {/* Плашка */}
         <div
           className="bg-black text-white text-center py-3 text-xs"
           style={{ maxWidth: 600, margin: '0 auto' }}

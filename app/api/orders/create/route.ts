@@ -15,7 +15,6 @@ export async function POST(request: NextRequest) {
       customer_phone,
       customer_comment,
       table_number,
-      payment_method,
       items,
     } = body
 
@@ -23,7 +22,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
     }
 
-    // Находим ресторан по slug
     const { data: restaurant, error: restaurantError } = await supabaseAdmin
       .from('restaurants')
       .select('id, name, telegram_chat_id')
@@ -34,13 +32,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Restaurant not found' }, { status: 404 })
     }
 
-    // Считаем сумму
     const total_amount = items.reduce(
       (sum: number, i: any) => sum + i.price * i.quantity,
       0
     )
 
-    // Создаём заказ
     const { data: order, error: orderError } = await supabaseAdmin
       .from('orders')
       .insert({
@@ -52,14 +48,13 @@ export async function POST(request: NextRequest) {
         total_amount,
         status: 'new',
         payment_status: 'unpaid',
-        payment_method: payment_method || 'at_venue',
+        payment_method: 'at_venue',
       })
       .select()
       .single()
 
     if (orderError) throw orderError
 
-    // Создаём позиции
     const { error: itemsError } = await supabaseAdmin
       .from('order_items')
       .insert(
@@ -74,7 +69,6 @@ export async function POST(request: NextRequest) {
 
     if (itemsError) throw itemsError
 
-    // Отправляем уведомление в Telegram
     if (restaurant.telegram_chat_id) {
       await sendTelegramNotification(
         restaurant.telegram_chat_id,
@@ -85,7 +79,6 @@ export async function POST(request: NextRequest) {
         customer_comment,
         table_number,
         total_amount,
-        payment_method || 'at_venue',
         items
       ).catch((e) => console.error('Telegram error:', e))
     }
@@ -110,7 +103,6 @@ async function sendTelegramNotification(
   comment: string | null,
   tableNumber: string | null,
   total: number,
-  paymentMethod: string,
   items: any[]
 ) {
   const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN
@@ -126,11 +118,6 @@ async function sendTelegramNotification(
 
   const shortId = orderId.slice(0, 8).toUpperCase()
 
-  const paymentLabel =
-    paymentMethod === 'online'
-      ? '💳 Оплата онлайн'
-      : '💵 Оплата на месте'
-
   const message = `
 🔔 <b>НОВЫЙ ЗАКАЗ #${shortId}</b>
 
@@ -145,7 +132,7 @@ ${itemsText}
 
 ━━━━━━━━━━━━━━━
 💰 <b>Итого: ${total} ₽</b>
-${paymentLabel}
+💵 Оплата на месте
 
 Откройте панель управления, чтобы принять заказ.
 `.trim()

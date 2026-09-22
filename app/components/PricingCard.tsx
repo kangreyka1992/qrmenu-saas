@@ -1,66 +1,71 @@
 'use client'
 
-import { motion } from 'framer-motion'
-import Link from 'next/link'
-import { Plan } from '@/lib/plans'
+import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase/client'
 
 export default function PricingCard({
   plan,
   index,
 }: {
-  plan: Plan
+  plan: any
   index: number
 }) {
+  const router = useRouter()
+  const supabase = createClient()
+  const [user, setUser] = useState<any>(null)
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setUser(data.user))
+  }, [])
+
+  const handleStart = () => {
+    if (!user) {
+      router.push(`/signup?plan=${plan.id}`)
+      return
+    }
+    router.push(`/tariffs?plan=${plan.id}&autoPay=1`)
+  }
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-50px' }}
-      transition={{ duration: 0.5, delay: index * 0.1 }}
-      whileHover={{ y: -8, transition: { duration: 0.2 } }}
-      className={`relative p-6 rounded-2xl border ${
+    <div
+      className={`relative rounded-2xl p-8 border ${
         plan.popular
-          ? 'border-[#ff9b26] bg-[#1a1d24] shadow-2xl shadow-[#ff9b26]/30'
-          : 'border-white/10 bg-[#1a1d24]'
+          ? 'border-orange-500 bg-[#141414] shadow-[0_0_40px_-10px_rgba(249,115,22,0.5)]'
+          : 'border-gray-800 bg-[#111111]'
       }`}
     >
       {plan.popular && (
-        <motion.div
-          initial={{ scale: 0 }}
-          whileInView={{ scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.3, type: 'spring', stiffness: 200 }}
-          className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-gradient-to-r from-[#ff9b26] to-[#e07a00] text-black text-xs font-black rounded-full shadow-lg shadow-[#ff9b26]/50"
-        >
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-500 text-black text-xs font-bold px-4 py-1 rounded-full">
           ПОПУЛЯРНЫЙ
-        </motion.div>
+        </div>
       )}
 
-      <div className="text-lg font-bold text-white mb-2">{plan.name}</div>
-      <div className="text-3xl font-black text-[#ff9b26] mb-1">
-        {plan.price} ₽
+      <h2 className="text-2xl font-bold mb-2 text-white">{plan.name}</h2>
+      <div className="text-4xl font-bold text-orange-500 mb-1">
+        {plan.price.toLocaleString('ru-RU')} ₽
       </div>
-      <div className="text-sm text-[#8a92a3] mb-4">в месяц</div>
+      <div className="text-sm text-gray-500 mb-6">{plan.period}</div>
 
-      <ul className="space-y-2 mb-6">
-        {plan.features.map((f, i) => (
-          <li key={i} className="text-sm text-[#c0c6d0] flex gap-2">
-            <span className="text-green-400">✓</span>
+      <ul className="space-y-3 mb-8">
+        {plan.features.map((f: string) => (
+          <li key={f} className="flex items-start gap-2 text-sm text-gray-300">
+            <span className="text-green-500 mt-0.5">✓</span>
             <span>{f}</span>
           </li>
         ))}
       </ul>
 
-      <Link
-        href="/signup"
-        className={`block w-full py-3 text-center font-bold rounded-lg transition-all hover:scale-105 ${
+      <button
+        onClick={handleStart}
+        className={`w-full py-3 rounded-lg font-semibold transition ${
           plan.popular
-            ? 'bg-gradient-to-r from-[#ff9b26] to-[#e07a00] text-black shadow-lg shadow-[#ff9b26]/30'
-            : 'bg-white/5 border border-white/10 text-white hover:bg-white/10'
+            ? 'bg-orange-500 hover:bg-orange-600 text-black'
+            : 'bg-gray-800 hover:bg-gray-700 text-white'
         }`}
       >
         Начать
-      </Link>
-    </motion.div>
+      </button>
+    </div>
   )
 }

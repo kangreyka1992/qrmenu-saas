@@ -9,13 +9,13 @@ export default function SuccessPage() {
           Оплата прошла успешно!
         </h1>
         <p className="text-[#8a92a3] mb-6">
-          Ваш заказ принят и передан на кухню. Официант скоро подойдёт.
+          Ваша подписка активирована. Доступ к личному кабинету открыт.
         </p>
         <Link
-          href="/"
+          href="/dashboard"
           className="inline-block px-6 py-3 bg-gradient-to-r from-[#ff9b26] to-[#e07a00] text-black font-bold rounded-lg"
         >
-          На главную
+          В личный кабинет →
         </Link>
       </div>
     </div>

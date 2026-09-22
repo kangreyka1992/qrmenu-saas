@@ -25,7 +25,6 @@ export default function CartButton({
 
   return (
     <>
-      {/* Плавающая кнопка корзины */}
       {totalItems > 0 && (
         <button
           onClick={() => setOpen(true)}
@@ -43,7 +42,6 @@ export default function CartButton({
         </button>
       )}
 
-      {/* Модалка оформления заказа */}
       {open && (
         <CartModal
           onClose={closeModal}

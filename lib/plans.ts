@@ -1,29 +1,31 @@
-export interface Plan {
-  id: string
-  name: string
-  price: number
-  features: string[]
-  popular?: boolean
-}
-
-export const PLANS: Plan[] = [
+export const PLANS = [
+  // ═══ ПОДПИСКА ═══
   {
-    id: 'start',
+    id: 'start_monthly',
     name: 'Старт',
     price: 2490,
+    period: 'в месяц',
+    type: 'subscription',
+    subtitle: 'Для тех, кто только начинает',
+    description: 'Попробуйте без больших вложений. Отмена в любой момент.',
     features: [
       '1 заведение',
       'Безлимит блюд',
-      'Свой логотип',
       'QR-код для печати',
-      'Обновление в реальном времени',
+      'Telegram-уведомления',
+      'Обновления',
+      'Поддержка',
     ],
+    popular: false,
   },
   {
-    id: 'business',
+    id: 'business_monthly',
     name: 'Бизнес',
     price: 5199,
-    popular: true,
+    period: 'в месяц',
+    type: 'subscription',
+    subtitle: 'Для растущего бизнеса',
+    description: 'Больше заведений, аналитика и мультиязычность.',
     features: [
       'До 3 заведений',
       'Всё из «Старт»',
@@ -31,11 +33,16 @@ export const PLANS: Plan[] = [
       'Аналитика просмотров',
       'Онлайн-заказ',
     ],
+    popular: true,
   },
   {
-    id: 'network',
+    id: 'network_monthly',
     name: 'Сеть',
     price: 9900,
+    period: 'в месяц',
+    type: 'subscription',
+    subtitle: 'Для сети заведений',
+    description: 'Максимум возможностей: свой домен, API, поддержка.',
     features: [
       'До 10 заведений',
       'Всё из «Бизнес»',
@@ -43,9 +50,67 @@ export const PLANS: Plan[] = [
       'API для интеграций',
       'Приоритетная поддержка',
     ],
+    popular: false,
+  },
+
+  // ═══ НАВСЕГДА ═══
+  {
+    id: 'start_lifetime',
+    name: 'Старт Навсегда',
+    price: 10000,
+    period: 'разово',
+    type: 'lifetime',
+    badge: '🔥 Выгодно',
+    subtitle: 'Один раз — навсегда',
+    description: 'Заплатите один раз — и забудьте о платежах. Окупается за 4 месяца.',
+    features: [
+      '♾️ Пожизненный доступ — платите один раз',
+      '💰 Экономия 60 000 ₽ за 5 лет',
+      '🏪 1 заведение навсегда',
+      '📱 Безлимит блюд и QR-кодов',
+      '🔄 Все будущие обновления бесплатно',
+      '🛡️ Приоритетная поддержка навсегда',
+    ],
+    popular: false,
+  },
+  {
+    id: 'business_lifetime',
+    name: 'Бизнес Навсегда',
+    price: 25000,
+    period: 'разово',
+    type: 'lifetime',
+    badge: '🏆 Лучшая цена',
+    subtitle: 'Для амбициозных',
+    description: 'Один платёж — и рост без ограничений. Окупается за 5 месяцев.',
+    features: [
+      '♾️ Пожизненный доступ — забудьте о платежах',
+      '💰 Экономия 180 000 ₽ за 5 лет',
+      '🏪 До 3 заведений навсегда',
+      '🌍 Мультиязычность + аналитика',
+      '📊 Онлайн-заказ и статистика',
+      '🔄 Все обновления бесплатно навсегда',
+      '🛡️ Приоритетная поддержка навсегда',
+    ],
+    popular: false,
+  },
+  {
+    id: 'network_lifetime',
+    name: 'Сеть Навсегда',
+    price: 30000,
+    period: 'разово',
+    type: 'lifetime',
+    badge: '👑 Максимум',
+    subtitle: 'Для сетей и франшиз',
+    description: 'Всё включено, навсегда. Окупается за 3 месяца.',
+    features: [
+      '♾️ Пожизненный доступ для всей сети',
+      '💰 Экономия 450 000 ₽ за 5 лет',
+      '🏪 До 10 заведений навсегда',
+      '🌐 Свой домен + API для интеграций',
+      '📊 Расширенная аналитика и отчёты',
+      '🔄 Все обновления бесплатно навсегда',
+      '🛡️ VIP-поддержка 24/7 навсегда',
+    ],
+    popular: false,
   },
 ]
-
-export function getPlan(id: string): Plan | undefined {
-  return PLANS.find((p) => p.id === id)
-}

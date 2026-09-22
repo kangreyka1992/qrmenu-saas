@@ -9,8 +9,8 @@ export default async function DashboardPage() {
 
   if (!user) redirect('/login')
 
-  const subscription = await getSubscription(user.id)   
-  const trialDaysLeft = await getTrialDaysLeft(user.id)  
+  const subscription = await getSubscription(user.id)
+  const trialDaysLeft = await getTrialDaysLeft(user.id)
 
   const { data: restaurants } = await supabase
     .from('restaurants')
@@ -25,13 +25,14 @@ export default async function DashboardPage() {
             <h1 className="text-2xl font-black text-white">Мои заведения</h1>
             <p className="text-sm text-[#8a92a3] mt-1">{user.email}</p>
 
+            {/* Триал */}
             {subscription?.status === 'trial' && (
               <div className="mt-3 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg inline-block">
                 <span className="text-yellow-400 text-sm font-bold">
                   🎁 Триал: {trialDaysLeft} дней
                 </span>
                 <a
-                  href="/dashboard/subscription"
+                  href="/tariffs"
                   className="ml-3 text-[#ff9b26] text-sm font-bold hover:underline"
                 >
                   Оформить подписку →
@@ -39,14 +40,29 @@ export default async function DashboardPage() {
               </div>
             )}
 
-            {subscription?.status === 'active' && (
-              <div className="mt-3 p-3 bg-green-500/10 border border-green-500/30 rounded-lg inline-block">
-                <span className="text-green-400 text-sm font-bold">
-                  ✅ Подписка активна
+            {/* Навсегда */}
+            {subscription?.plan_type === 'lifetime' && (
+              <div className="mt-3 p-3 bg-purple-500/10 border border-purple-500/30 rounded-lg inline-block">
+                <span className="text-purple-400 text-sm font-bold">
+                  ♾️ Навсегда — доступ без ограничений
                 </span>
               </div>
             )}
 
+            {/* Подписка активна */}
+            {subscription?.plan_type === 'subscription' &&
+              subscription?.status === 'active' && (
+                <div className="mt-3 p-3 bg-green-500/10 border border-green-500/30 rounded-lg inline-block">
+                  <span className="text-green-400 text-sm font-bold">
+                    ✅ Подписка активна до{' '}
+                    {subscription.current_period_ends_at
+                      ? new Date(subscription.current_period_ends_at).toLocaleDateString('ru-RU')
+                      : '—'}
+                  </span>
+                </div>
+              )}
+
+            {/* Не активна */}
             {subscription &&
               subscription.status !== 'trial' &&
               subscription.status !== 'active' && (
@@ -55,7 +71,7 @@ export default async function DashboardPage() {
                     ⚠️ Подписка не активна
                   </span>
                   <a
-                    href="/dashboard/subscription"
+                    href="/tariffs"
                     className="ml-3 text-[#ff9b26] text-sm font-bold hover:underline"
                   >
                     Оформить →

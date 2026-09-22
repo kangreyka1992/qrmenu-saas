@@ -25,7 +25,6 @@ export default async function OrdersPage({
 
   if (!restaurant) notFound()
 
-  // Заказы за последние 7 дней
   const sevenDaysAgo = new Date(
     Date.now() - 7 * 24 * 60 * 60 * 1000
   ).toISOString()
@@ -87,10 +86,8 @@ export default async function OrdersPage({
                 key={order.id}
                 className="bg-[#1a1d24] rounded-2xl border border-white/10 p-5"
               >
-                {/* Верхняя часть: номер стола, время, статус */}
                 <div className="flex justify-between items-start mb-3 flex-wrap gap-3">
                   <div className="flex-1 min-w-0">
-                    {/* КРУПНЫЙ НОМЕР СТОЛА */}
                     {order.table_number ? (
                       <div className="inline-block px-5 py-3 bg-gradient-to-r from-[#ff9b26] to-[#e07a00] text-black font-black text-2xl rounded-xl mb-3 shadow-lg">
                         🪑 Стол №{order.table_number}
@@ -130,7 +127,6 @@ export default async function OrdersPage({
                   </div>
                 </div>
 
-                {/* Список блюд */}
                 <div className="border-t border-white/10 pt-3 mt-3">
                   {order.order_items?.map((item: any) => (
                     <div
@@ -147,7 +143,6 @@ export default async function OrdersPage({
                   ))}
                 </div>
 
-                {/* Итого + кнопка смены статуса */}
                 <div className="flex justify-between items-center pt-3 mt-3 border-t border-white/10 flex-wrap gap-2">
                   <div className="text-lg font-black text-white">
                     Итого:{' '}
