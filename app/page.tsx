@@ -76,7 +76,6 @@ export default function Home() {
           </FadeUp>
         </div>
 
-        {/* ═══ STATS — премиум-блок ═══ */}
         <FadeUp delay={0.5}>
           <HeroStats />
         </FadeUp>
@@ -142,21 +141,94 @@ export default function Home() {
       </section>
 
       {/* ═══ PRICING ═══ */}
-      <section className="px-5 py-20 border-t border-white/5" id="pricing">
-        <div className="max-w-5xl mx-auto">
+      <section className="px-5 py-24 border-t border-white/5" id="pricing">
+        <div className="max-w-6xl mx-auto">
           <FadeUp>
-            <h2 className="text-3xl md:text-4xl font-black text-center mb-4">
+            <h2 className="text-3xl md:text-5xl font-black text-center mb-4">
               Тарифы
             </h2>
-            <p className="text-center text-[#8a92a3] mb-14">
-              14 дней бесплатно. Без карты.
+            <p className="text-center text-[#8a92a3] mb-4 max-w-2xl mx-auto">
+              Выберите подписку или оплатите один раз — и пользуйтесь навсегда
+            </p>
+            <p className="text-center text-[#ff9b26] font-bold mb-16">
+              🎁 14 дней бесплатно · Без карты
             </p>
           </FadeUp>
 
-          <div className="grid md:grid-cols-3 gap-6">
-            {PLANS.map((plan, i) => (
-              <PricingCard key={plan.id} plan={plan} index={i} />
-            ))}
+          {/* Блок «Почему выгодно» */}
+          <FadeUp>
+            <div className="max-w-3xl mx-auto mb-16 p-6 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-2xl">
+              <h3 className="text-xl font-black text-white mb-4 text-center">
+                💡 Почему выгодно купить «Навсегда»?
+              </h3>
+              <div className="grid md:grid-cols-3 gap-4 text-sm text-gray-300">
+                <div className="flex items-start gap-3">
+                  <span className="text-purple-400 text-2xl">💰</span>
+                  <div>
+                    <b className="text-white">Экономия до 90%</b>
+                    <p className="text-xs text-gray-400 mt-1">
+                      За 5 лет подписка — 149 400 ₽, а «Навсегда» — от 10 000 ₽
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="text-purple-400 text-2xl">🔒</span>
+                  <div>
+                    <b className="text-white">Защита от роста цен</b>
+                    <p className="text-xs text-gray-400 mt-1">
+                      Платите один раз — цена не изменится
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="text-purple-400 text-2xl">♾️</span>
+                  <div>
+                    <b className="text-white">Все обновления бесплатно</b>
+                    <p className="text-xs text-gray-400 mt-1">
+                      Новые функции — автоматически
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </FadeUp>
+
+          {/* ПОДПИСКА */}
+          <div className="mb-20">
+            <div className="text-center mb-8">
+              <h3 className="text-2xl md:text-3xl font-black mb-2">
+                📅 <span className="text-[#ff9b26]">Подписка</span>
+              </h3>
+              <p className="text-[#8a92a3] text-sm max-w-xl mx-auto">
+                Гибкий вариант — платите ежемесячно, отмените в любой момент
+              </p>
+            </div>
+            <div className="grid md:grid-cols-3 gap-6">
+              {PLANS.filter((p) => p.type === 'subscription').map((plan, i) => (
+                <ScaleIn key={plan.id} delay={i * 0.1}>
+                  <PricingCard plan={plan} index={i} />
+                </ScaleIn>
+              ))}
+            </div>
+          </div>
+
+          {/* НАВСЕГДА */}
+          <div>
+            <div className="text-center mb-8">
+              <h3 className="text-2xl md:text-3xl font-black mb-2">
+                ♾️ <span className="text-purple-400">Навсегда</span>
+              </h3>
+              <p className="text-[#8a92a3] text-sm max-w-xl mx-auto">
+                Один раз заплатили — пользуетесь пожизненно. Экономия до 90%!
+              </p>
+            </div>
+            <div className="grid md:grid-cols-3 gap-6">
+              {PLANS.filter((p) => p.type === 'lifetime').map((plan, i) => (
+                <ScaleIn key={plan.id} delay={i * 0.1}>
+                  <PricingCard plan={plan} index={i} />
+                </ScaleIn>
+              ))}
+            </div>
           </div>
         </div>
       </section>
