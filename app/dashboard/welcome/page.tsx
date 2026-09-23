@@ -18,13 +18,19 @@ function WelcomeContent() {
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
-      if (!data.user) router.push('/login')
-      if (data.user?.email) setName(data.user.email.split('@')[0])
+      if (!data.user) {
+        router.push('/login')
+        return
+      }
+      if (data.user?.email) {
+        setName(data.user.email.split('@')[0])
+      }
     })
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
     if (!restaurantName.trim() || !name.trim() || !phone.trim()) {
       setError('Заполните обязательные поля')
       return
@@ -37,7 +43,10 @@ function WelcomeContent() {
       const {
         data: { user },
       } = await supabase.auth.getUser()
-      if (!user) throw new Error('Not authorized')
+
+      if (!user) {
+        throw new Error('Не авторизован')
+      }
 
       const res = await fetch('/api/leads', {
         method: 'POST',
@@ -53,10 +62,15 @@ function WelcomeContent() {
         }),
       })
 
-      if (!res.ok) throw new Error('Ошибка отправки')
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Ошибка отправки')
+      }
 
       router.push('/dashboard')
     } catch (err: any) {
+      console.error('Lead error:', err)
       setError(err.message || 'Не удалось отправить')
       setLoading(false)
     }

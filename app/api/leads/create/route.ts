@@ -9,46 +9,68 @@ const supabaseAdmin = createClient(
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { restaurant_name, name, phone, telegram, comment, email, user_id } =
-      body
+    const { restaurant_name, name, phone, telegram, comment, email, user_id } = body
 
     if (!restaurant_name || !name || !phone) {
-      return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
+      return NextResponse.json(
+        { error: 'Заполните обязательные поля' },
+        { status: 400 }
+      )
     }
 
-    const { error } = await supabaseAdmin.from('leads').insert({
-      restaurant_name,
-      name,
-      phone,
-      telegram: telegram || null,
-      comment: comment || null,
-      email: email || null,
-      user_id: user_id || null,
-      status: 'new',
-    })
+    // ═══ Сохраняем в БД ═══
+    const { data, error } = await supabaseAdmin
+      .from('leads')
+      .insert({
+        restaurant_name,
+        name,
+        phone,
+        telegram: telegram || null,
+        comment: comment || null,
+        email: email || null,
+        user_id: user_id || null,
+        status: 'new',
+      })
+      .select()
+      .single()
 
-    if (error) throw error
+    if (error) {
+      console.error('DB error:', error)
+      throw new Error(error.message)
+    }
 
-    // Уведомление админу в Telegram
+    console.log('Lead saved:', data.id)
+
+    // ═══ Уведомление в Telegram ═══
     const adminChatId = process.env.ADMIN_TELEGRAM_CHAT_ID
-    if (adminChatId && process.env.TELEGRAM_BOT_TOKEN) {
-      await fetch(
-        `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            chat_id: adminChatId,
-            text: `🎉 <b>Новый клиент оплатил!</b>\n\n🏪 ${restaurant_name}\n👤 ${name}\n📞 ${phone}\n💬 ${telegram || '—'}\n📝 ${comment || '—'}\n📧 ${email}`,
-            parse_mode: 'HTML',
-          }),
-        }
-      ).catch((e) => console.error('Telegram error:', e))
+    const botToken = process.env.TELEGRAM_BOT_TOKEN
+
+    if (adminChatId && botToken) {
+      try {
+        await fetch(
+          `https://api.telegram.org/bot${botToken}/sendMessage`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              chat_id: adminChatId,
+              text: `🎉 <b>Новый клиент!</b>\n\n🏪 ${restaurant_name}\n👤 ${name}\n📞 ${phone}\n💬 ${telegram || '—'}\n📝 ${comment || '—'}\n📧 ${email || '—'}`,
+              parse_mode: 'HTML',
+            }),
+          }
+        )
+      } catch (tgError) {
+        console.error('Telegram error:', tgError)
+        // Не блокируем — заявка уже сохранена
+      }
     }
 
-    return NextResponse.json({ ok: true })
+    return NextResponse.json({ ok: true, id: data.id })
   } catch (error: any) {
     console.error('Lead error:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json(
+      { error: error.message || 'Ошибка сервера' },
+      { status: 500 }
+    )
   }
 }
