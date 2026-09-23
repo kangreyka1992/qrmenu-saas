@@ -107,13 +107,14 @@ export default async function MenuPage({
           )}
         </div>
 
-        {/* ═══ МЕНЮ ═══ */}
+        {/* ═══ ПЛИТКИ КАТЕГОРИЙ ═══ */}
         <MenuSearch
           categories={sortedCategories}
           primaryColor={primaryColor}
+          slug={restaurant.slug}
         />
 
-        {/* ═══ ПЛАВАЮЩАЯ КОРЗИНА ═══ */}
+        {/* ═══ КОРЗИНА ═══ */}
         <Suspense fallback={null}>
           <CartButton
             primaryColor={primaryColor}

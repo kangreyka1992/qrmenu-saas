@@ -1,24 +1,22 @@
 'use client'
 
 import { useState } from 'react'
-import { useCart } from './CartContext'
+import Link from 'next/link'
 
 export default function MenuSearch({
   categories,
   primaryColor,
+  slug,
 }: {
   categories: any[]
   primaryColor: string
+  slug: string
 }) {
   const [search, setSearch] = useState('')
-  const { addItem } = useCart()
 
-  const filtered = categories.map((cat) => ({
-    ...cat,
-    dishes: (cat.dishes || []).filter((d: any) =>
-      d.name.toLowerCase().includes(search.toLowerCase())
-    ),
-  }))
+  const filtered = categories.filter((cat) =>
+    cat.name.toLowerCase().includes(search.toLowerCase())
+  )
 
   return (
     <div className="p-4 pb-32">
@@ -33,86 +31,52 @@ export default function MenuSearch({
         />
       </div>
 
-      {/* ═══ КАТЕГОРИИ ═══ */}
-      {filtered.map((cat: any) => {
-        if (cat.dishes.length === 0) return null
+      {/* ═══ ЗАГОЛОВОК ═══ */}
+      <h2
+        className="text-3xl font-black text-[#3a2a1a] mb-6"
+        style={{ fontFamily: 'Georgia, serif' }}
+      >
+        Популярные категории
+      </h2>
 
-        return (
-          <div key={cat.id} className="mb-10">
-            {/* Заголовок категории */}
-            <div className="mb-4">
-              <h2
-                className="text-4xl font-black text-[#c0392b] mb-1 flex items-center gap-2"
-                style={{ fontFamily: 'Georgia, serif' }}
-              >
-                <span>{cat.icon}</span>
-                <span>{cat.name}</span>
-              </h2>
-              <div className="h-1 bg-[#c0392b] w-20 rounded-full" />
-            </div>
+      {/* ═══ ПЛИТКИ КАТЕГОРИЙ ═══ */}
+      <div className="grid grid-cols-2 gap-4">
+        {filtered.map((cat: any) => {
+          const firstDish = cat.dishes?.[0]
+          const coverImage =
+            firstDish?.image_url || getCategoryDefaultImage(cat.name)
 
-            {/* Блюда */}
-            <div className="bg-white/80 rounded-2xl p-4 border-2 border-[#e0d5c5] shadow-sm">
-              {cat.dishes.map((dish: any, i: number) => (
+          return (
+            <Link
+              key={cat.id}
+              href={`/menu/${slug}/${cat.id}`}
+              className="group relative bg-white rounded-2xl overflow-hidden border-2 border-[#e0d5c5] hover:border-[#c0392b] transition-all shadow-sm hover:shadow-lg"
+            >
+              <div className="aspect-square bg-[#f5ede0] overflow-hidden">
+                <img
+                  src={coverImage}
+                  alt={cat.name}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+              </div>
+              <div className="p-3 text-center">
                 <div
-                  key={dish.id}
-                  className={`flex items-center gap-4 py-4 ${
-                    i !== cat.dishes.length - 1
-                      ? 'border-b border-dashed border-[#d0c5b5]'
-                      : ''
-                  }`}
+                  className="text-sm font-black text-[#3a2a1a] leading-tight"
+                  style={{ fontFamily: 'Georgia, serif' }}
                 >
-                  {/* Фото */}
-                  <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-[#f5ede0] border-2 border-[#e0d5b5] shadow-sm">
-                    {dish.image_url ? (
-                      <img
-                        src={dish.image_url}
-                        alt={dish.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-3xl">
-                        🍽
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Название и описание */}
-                  <div className="flex-1 min-w-0">
-                    <div
-                      className="text-base font-bold text-[#c0392b] uppercase leading-tight"
-                      style={{ fontFamily: 'Georgia, serif' }}
-                    >
-                      {dish.name}
-                    </div>
-                    {dish.description && (
-                      <div className="text-xs text-[#8a7a6a] mt-1 line-clamp-2 leading-snug">
-                        {dish.description}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Цена — тёмный кружок */}
-                  <button
-                    onClick={() => addItem(dish)}
-                    className="flex-shrink-0 transition-transform active:scale-95"
-                    aria-label={`Добавить ${dish.name}`}
-                  >
-                    <div className="w-16 h-16 rounded-full bg-[#1a1a1a] flex items-center justify-center shadow-lg hover:bg-[#c0392b] transition-colors">
-                      <span className="text-white font-black text-sm">
-                        {dish.price}₽
-                      </span>
-                    </div>
-                  </button>
+                  {cat.icon} {cat.name}
                 </div>
-              ))}
-            </div>
-          </div>
-        )
-      })}
+                <div className="text-xs text-[#8a7a6a] mt-1">
+                  {cat.dishes?.length || 0} блюд
+                </div>
+              </div>
+            </Link>
+          )
+        })}
+      </div>
 
       {/* ═══ ПУСТО ═══ */}
-      {filtered.every((c: any) => c.dishes.length === 0) && (
+      {filtered.length === 0 && (
         <div className="text-center py-20 text-[#8a7a6a]">
           <div className="text-5xl mb-3">🔍</div>
           <p>Ничего не найдено</p>
@@ -120,4 +84,39 @@ export default function MenuSearch({
       )}
     </div>
   )
+}
+
+// ═══ Дефолтные фото для категорий ═══
+function getCategoryDefaultImage(categoryName: string): string {
+  const name = (categoryName || '').toLowerCase()
+
+  if (name.includes('пицц')) {
+    return 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400'
+  }
+  if (name.includes('ролл') || name.includes('суши')) {
+    return 'https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=400'
+  }
+  if (name.includes('напит') || name.includes('кофе') || name.includes('чай')) {
+    return 'https://images.unsplash.com/photo-1544145945-f90425340c7e?w=400'
+  }
+  if (
+    name.includes('десерт') ||
+    name.includes('торт') ||
+    name.includes('морожен')
+  ) {
+    return 'https://images.unsplash.com/photo-1551024506-0bccd828d307?w=400'
+  }
+  if (name.includes('салат')) {
+    return 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400'
+  }
+  if (name.includes('суп')) {
+    return 'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=400'
+  }
+  if (name.includes('бургер') || name.includes('сэндвич')) {
+    return 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400'
+  }
+  if (name.includes('паста') || name.includes('макарон')) {
+    return 'https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=400'
+  }
+  return 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400'
 }
