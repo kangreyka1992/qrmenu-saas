@@ -31,13 +31,13 @@ export default async function MenuPage({
 
   if (!subActive) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#f5ede0] p-6">
+      <div className="min-h-screen flex items-center justify-center bg-[#0f0f10] p-6">
         <div className="text-center max-w-md">
-          <div className="text-6xl mb-4">⏸</div>
-          <h1 className="text-2xl font-black text-[#3a2a1a] mb-2">
+          <div className="text-7xl mb-6">⏸</div>
+          <h1 className="text-2xl font-black text-white mb-3">
             Меню временно недоступно
           </h1>
-          <p className="text-[#8a7a6a]">
+          <p className="text-white/60">
             Владелец заведения не оплатил подписку. Меню вернётся после оплаты.
           </p>
         </div>
@@ -62,73 +62,83 @@ export default async function MenuPage({
 
   return (
     <CartProvider slug={restaurant.slug}>
-      <div
-        className="min-h-screen"
-        style={{
-          maxWidth: 600,
-          margin: '0 auto',
-          background: '#f5ede0',
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E")`,
-        }}
-      >
+      <div className="min-h-screen bg-[#0f0f10] relative">
         <TrackView restaurantId={restaurant.id} />
         <LanguageSwitcher />
 
-        {/* ═══ ШАПКА ═══ */}
+        {/* ═══ ШАПКА — премиальная ═══ */}
         <div className="relative overflow-hidden">
+          {/* Градиент + декоративные элементы */}
           <div
             className="absolute inset-0"
             style={{
-              background: `linear-gradient(135deg, ${primaryColor}, ${primaryColor}dd)`,
+              background: `linear-gradient(160deg, ${primaryColor} 0%, ${primaryColor}dd 60%, #1a1a1a 100%)`,
             }}
           />
-          {/* Декоративные круги */}
-          <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-white/10" />
-          <div className="absolute -bottom-32 -left-16 w-64 h-64 rounded-full bg-white/5" />
+          <div className="absolute -top-32 -right-32 w-96 h-96 rounded-full bg-white/10 blur-3xl" />
+          <div className="absolute -bottom-20 -left-20 w-80 h-80 rounded-full bg-black/20 blur-3xl" />
 
-          <div className="relative text-center py-12 px-5 text-white">
-            {restaurant.logo_url ? (
-              <img
-                src={restaurant.logo_url}
-                alt={restaurant.name}
-                className="w-28 h-28 rounded-3xl mx-auto mb-4 object-cover shadow-2xl border-4 border-white/30 backdrop-blur-sm"
-              />
-            ) : (
-              <div className="text-7xl mb-4">☕</div>
-            )}
-            <h1
-              className="text-4xl font-black tracking-tight"
-              style={{ fontFamily: 'Georgia, serif' }}
-            >
-              {restaurant.name}
-            </h1>
+          <div className="relative px-5 pt-8 pb-10 text-white">
+            {/* Верхняя строка */}
+            <div className="flex justify-between items-center mb-8">
+              <div className="w-10" />
+              <LanguageSwitcher />
+            </div>
 
-            <div className="flex flex-wrap justify-center gap-3 mt-4 text-sm">
-              {restaurant.address && (
-                <span className="px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm">
-                  📍 {restaurant.address}
-                </span>
+            {/* Логотип и название */}
+            <div className="text-center">
+              {restaurant.logo_url ? (
+                <img
+                  src={restaurant.logo_url}
+                  alt={restaurant.name}
+                  className="w-28 h-28 rounded-3xl mx-auto mb-5 object-cover shadow-2xl border-4 border-white/20 backdrop-blur-sm"
+                />
+              ) : (
+                <div className="w-28 h-28 rounded-3xl mx-auto mb-5 bg-white/20 backdrop-blur-sm flex items-center justify-center text-5xl shadow-2xl border-4 border-white/20">
+                  ☕
+                </div>
               )}
-              {restaurant.phone && (
-                <span className="px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm">
-                  📞 {restaurant.phone}
-                </span>
-              )}
-              {restaurant.work_hours && (
-                <span className="px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm">
-                  🕐 {restaurant.work_hours}
-                </span>
-              )}
+
+              <h1 className="text-4xl font-black tracking-tight mb-2 drop-shadow-lg">
+                {restaurant.name}
+              </h1>
+
+              {/* Бейджи */}
+              <div className="flex flex-wrap justify-center gap-2 mt-4">
+                {restaurant.address && (
+                  <span className="px-4 py-1.5 rounded-full bg-white/15 backdrop-blur-md text-sm border border-white/20">
+                    📍 {restaurant.address}
+                  </span>
+                )}
+                {restaurant.phone && (
+                  <a
+                    href={`tel:${restaurant.phone.replace(/\D/g, '')}`}
+                    className="px-4 py-1.5 rounded-full bg-white/15 backdrop-blur-md text-sm border border-white/20 hover:bg-white/25 transition"
+                  >
+                    📞 {restaurant.phone}
+                  </a>
+                )}
+                {restaurant.work_hours && (
+                  <span className="px-4 py-1.5 rounded-full bg-white/15 backdrop-blur-md text-sm border border-white/20">
+                    🕐 {restaurant.work_hours}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
+
+          {/* Волна снизу */}
+          <div className="absolute bottom-0 left-0 right-0 h-8 bg-[#0f0f10]" style={{ borderRadius: '50% 50% 0 0 / 100% 100% 0 0' }} />
         </div>
 
-        {/* ═══ ПЛИТКИ КАТЕГОРИЙ ═══ */}
-        <MenuSearch
-          categories={sortedCategories}
-          primaryColor={primaryColor}
-          slug={restaurant.slug}
-        />
+        {/* ═══ МЕНЮ ═══ */}
+        <div className="relative -mt-2">
+          <MenuSearch
+            categories={sortedCategories}
+            primaryColor={primaryColor}
+            slug={restaurant.slug}
+          />
+        </div>
 
         {/* ═══ КОРЗИНА ═══ */}
         <Suspense fallback={null}>
@@ -140,16 +150,13 @@ export default async function MenuPage({
         </Suspense>
 
         {/* ═══ НИЖНИЕ КНОПКИ ═══ */}
-        <div
-          className="fixed bottom-0 left-0 right-0 z-30"
-          style={{ maxWidth: 600, margin: '0 auto' }}
-        >
-          <div className="p-3 bg-gradient-to-t from-black/90 to-transparent">
+        <div className="fixed bottom-0 left-0 right-0 z-30">
+          <div className="max-w-[600px] mx-auto p-3 bg-gradient-to-t from-black/95 via-black/80 to-transparent">
             <div className="grid grid-cols-2 gap-2">
               {restaurant.phone ? (
                 <a
                   href={`tel:${restaurant.phone.replace(/\D/g, '')}`}
-                  className="py-3 bg-white text-[#3a2a1a] font-bold rounded-xl text-center text-sm shadow-lg"
+                  className="py-3.5 bg-white text-black font-bold rounded-2xl text-center text-sm shadow-xl active:scale-95 transition"
                 >
                   📞 Позвонить
                 </a>
@@ -165,6 +172,8 @@ export default async function MenuPage({
             </div>
           </div>
         </div>
+
+        <div className="h-24" />
       </div>
     </CartProvider>
   )

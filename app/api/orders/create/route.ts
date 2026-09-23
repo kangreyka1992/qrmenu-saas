@@ -29,7 +29,10 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (restaurantError || !restaurant) {
-      return NextResponse.json({ error: 'Restaurant not found' }, { status: 404 })
+      return NextResponse.json(
+        { error: 'Restaurant not found' },
+        { status: 404 }
+      )
     }
 
     const total_amount = items.reduce(
@@ -69,6 +72,7 @@ export async function POST(request: NextRequest) {
 
     if (itemsError) throw itemsError
 
+    // ═══ Отправляем уведомление владельцу — через БОТА ЗАКАЗОВ ═══
     if (restaurant.telegram_chat_id) {
       await sendTelegramNotification(
         restaurant.telegram_chat_id,
@@ -94,6 +98,9 @@ export async function POST(request: NextRequest) {
   }
 }
 
+// ═══════════════════════════════════════════════════
+// TELEGRAM — через БОТА ЗАКАЗОВ
+// ═══════════════════════════════════════════════════
 async function sendTelegramNotification(
   chatId: string,
   orderId: string,
@@ -105,10 +112,11 @@ async function sendTelegramNotification(
   total: number,
   items: any[]
 ) {
-  const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN
+  // Используем ТОКЕН БОТА ЗАКАЗОВ
+  const BOT_TOKEN = process.env.TELEGRAM_ORDERS_BOT_TOKEN
 
   if (!BOT_TOKEN) {
-    console.warn('TELEGRAM_BOT_TOKEN не задан — уведомление не отправлено')
+    console.warn('TELEGRAM_ORDERS_BOT_TOKEN не задан — уведомление не отправлено')
     return
   }
 

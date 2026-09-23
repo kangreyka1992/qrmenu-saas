@@ -39,20 +39,12 @@ export default async function CategoryPage({
 
   return (
     <CartProvider slug={restaurant.slug}>
-      <div
-        className="min-h-screen"
-        style={{
-          maxWidth: 600,
-          margin: '0 auto',
-          background: '#f5ede0',
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E")`,
-        }}
-      >
+      <div className="min-h-screen bg-[#0f0f10]">
         {/* ═══ ШАПКА КАТЕГОРИИ ═══ */}
         <div
-          className="text-white p-5 sticky top-0 z-20 shadow-xl"
+          className="text-white p-4 sticky top-0 z-20 shadow-xl border-b border-white/5 backdrop-blur-xl"
           style={{
-            background: `linear-gradient(135deg, ${primaryColor}, ${primaryColor}dd)`,
+            background: `${primaryColor}ee`,
           }}
         >
           <Link
@@ -62,12 +54,9 @@ export default async function CategoryPage({
             ← Назад
           </Link>
           <div className="flex items-center gap-3 mt-3">
-            <span className="text-4xl">{categoryData.icon || '🍽'}</span>
+            <span className="text-4xl drop-shadow">{categoryData.icon || '🍽'}</span>
             <div>
-              <h1
-                className="text-2xl font-black leading-tight"
-                style={{ fontFamily: 'Georgia, serif' }}
-              >
+              <h1 className="text-2xl font-black leading-tight">
                 {categoryData.name}
               </h1>
               <p className="text-xs opacity-80 mt-0.5">
@@ -77,17 +66,14 @@ export default async function CategoryPage({
           </div>
         </div>
 
-        {/* ═══ СЕТКА БЛЮД ═══ */}
         <DishGrid dishes={sortedDishes} primaryColor={primaryColor} />
 
-        {/* ═══ КОРЗИНА ═══ */}
         <CartButton
           primaryColor={primaryColor}
           slug={restaurant.slug}
           restaurantName={restaurant.name}
         />
 
-        {/* ═══ НИЖНИЙ ОТСТУП ═══ */}
         <div className="h-32" />
       </div>
     </CartProvider>
