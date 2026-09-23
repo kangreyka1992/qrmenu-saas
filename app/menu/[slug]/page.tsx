@@ -148,18 +148,6 @@ export default async function MenuPage({
             </div>
           </div>
         </div>
-
-        {/* ═══ ПЛАШКА ═══ */}
-        <div
-          className="bg-[#1a1a1a] text-white text-center py-3 text-xs"
-          style={{ maxWidth: 600, margin: '0 auto' }}
-        >
-          Создано в{' '}
-          <Link href="/" className="font-bold" style={{ color: primaryColor }}>
-            QRMenu
-          </Link>{' '}
-          · 990 ₽/мес
-        </div>
       </div>
     </CartProvider>
   )
