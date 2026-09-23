@@ -47,10 +47,10 @@ export default function Home() {
                 🚀 Выбрать тариф
               </Link>
               <Link
-                href="/demo"
-                className="px-8 py-4 bg-white/5 border border-white/10 text-white font-bold rounded-xl hover:bg-white/10 hover:border-white/20 transition-all"
-              >
-                👀 Посмотреть демо
+              href="/menu/yokko"
+              className="px-8 py-4 bg-white/5 border border-white/10 text-white font-bold rounded-xl hover:bg-white/10 hover:border-white/20 transition-all"
+            >
+              👀 Посмотреть демо
               </Link>
             </div>
           </FadeUp>
