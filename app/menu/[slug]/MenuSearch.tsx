@@ -19,7 +19,7 @@ export default function MenuSearch({
   )
 
   return (
-    <div className="px-4 pb-8">
+    <div className="px-4 pb-8 max-w-[600px] mx-auto">
       {/* ═══ ПОИСК ═══ */}
       <div className="mb-6 relative">
         <input
@@ -36,9 +36,7 @@ export default function MenuSearch({
 
       {/* ═══ ЗАГОЛОВОК ═══ */}
       <div className="mb-5 flex items-center justify-between">
-        <h2 className="text-2xl font-black text-white">
-          Меню
-        </h2>
+        <h2 className="text-2xl font-black text-white">Меню</h2>
         <span className="text-sm text-white/40">
           {filtered.length} категорий
         </span>
@@ -46,7 +44,7 @@ export default function MenuSearch({
 
       {/* ═══ ПЛИТКИ КАТЕГОРИЙ ═══ */}
       <div className="grid grid-cols-2 gap-4">
-        {filtered.map((cat: any, i: number) => {
+        {filtered.map((cat: any) => {
           const firstDish = cat.dishes?.[0]
           const coverImage =
             firstDish?.image_url || getCategoryDefaultImage(cat.name)
@@ -55,7 +53,7 @@ export default function MenuSearch({
             <Link
               key={cat.id}
               href={`/menu/${slug}/${cat.id}`}
-              className="group relative rounded-3xl overflow-hidden bg-[#1a1a1c] border border-white/5 hover:border-white/20 transition-all duration-300 shadow-xl hover:shadow-2xl hover:-translate-y-1"
+              className="group relative rounded-3xl overflow-hidden bg-[#1a1a1c] border border-white/5 hover:border-white/20 transition-all duration-300 shadow-xl hover:shadow-2xl hover:-translate-y-1 block"
             >
               {/* Фото */}
               <div className="aspect-[4/5] bg-[#0f0f10] overflow-hidden relative">
@@ -63,16 +61,17 @@ export default function MenuSearch({
                   src={coverImage}
                   alt={cat.name}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  loading="lazy"
                 />
-                {/* Градиент снизу */}
+
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
 
-                {/* Иконка категории — сверху */}
+                {/* Иконка */}
                 <div className="absolute top-3 right-3 w-11 h-11 rounded-2xl bg-white/15 backdrop-blur-md border border-white/20 flex items-center justify-center text-xl shadow-lg">
                   {cat.icon || '🍽'}
                 </div>
 
-                {/* Название поверх фото — снизу */}
+                {/* Название */}
                 <div className="absolute bottom-0 left-0 right-0 p-4">
                   <div className="text-xl font-black text-white leading-tight mb-1 drop-shadow-lg">
                     {cat.name}
@@ -120,7 +119,11 @@ function getCategoryDefaultImage(categoryName: string): string {
     return 'https://images.unsplash.com/photo-1615361200141-f45040f367be?w=800&q=80'
   if (name.includes('напит') || name.includes('кофе') || name.includes('чай'))
     return 'https://images.unsplash.com/photo-1544145945-f90425340c7e?w=800&q=80'
-  if (name.includes('десерт') || name.includes('торт') || name.includes('морожен'))
+  if (
+    name.includes('десерт') ||
+    name.includes('торт') ||
+    name.includes('морожен')
+  )
     return 'https://images.unsplash.com/photo-1551024506-0bccd828d307?w=800&q=80'
   if (name.includes('салат'))
     return 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&q=80'

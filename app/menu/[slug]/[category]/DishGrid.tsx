@@ -29,20 +29,28 @@ export default function DishGrid({
   }
 
   return (
-    <div className="p-4">
+    <div className="max-w-[600px] mx-auto px-4 py-6">
+      {/* Заголовок */}
+      <div className="mb-5 flex items-baseline justify-between">
+        <h2 className="text-2xl font-black text-white">Блюда</h2>
+        <span className="text-sm text-white/40">{dishes.length} шт</span>
+      </div>
+
+      {/* Сетка */}
       <div className="grid grid-cols-2 gap-4">
         {dishes.map((dish: any) => (
           <div
             key={dish.id}
-            className="bg-[#1a1a1c] rounded-3xl overflow-hidden border border-white/5 hover:border-white/20 transition-all duration-300 flex flex-col shadow-xl hover:shadow-2xl hover:-translate-y-1"
+            className="bg-gradient-to-b from-[#1e1e22] to-[#16161a] rounded-3xl overflow-hidden border border-white/[0.06] flex flex-col shadow-2xl hover:border-white/20 transition-all duration-300 group"
           >
             {/* Фото */}
-            <div className="aspect-square bg-[#0f0f10] overflow-hidden relative">
+            <div className="aspect-[4/5] bg-[#0f0f10] overflow-hidden relative">
               {dish.image_url ? (
                 <img
                   src={dish.image_url}
                   alt={dish.name}
-                  className="w-full h-full object-cover hover:scale-110 transition-transform duration-700"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  loading="lazy"
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-5xl opacity-20">
@@ -50,34 +58,45 @@ export default function DishGrid({
                 </div>
               )}
 
+              {/* Градиент */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+              {/* Бейдж ХИТ */}
               {dish.is_popular && (
-                <div className="absolute top-3 left-3 px-3 py-1 bg-red-500 text-white text-xs font-black rounded-full shadow-lg">
+                <div className="absolute top-3 left-3 px-2.5 py-1 bg-gradient-to-r from-red-500 to-orange-500 text-white text-[10px] font-black rounded-full shadow-lg">
                   🔥 ХИТ
                 </div>
               )}
             </div>
 
             {/* Инфо */}
-            <div className="p-4 flex-1 flex flex-col">
-              <div className="text-base font-bold text-white leading-tight mb-1 line-clamp-2">
+            <div className="p-3.5 flex-1 flex flex-col">
+              <div className="text-[15px] font-bold text-white leading-snug mb-1.5 line-clamp-2">
                 {dish.name}
               </div>
 
               {dish.description && (
-                <div className="text-xs text-white/50 line-clamp-2 mb-3 leading-snug">
+                <div className="text-xs text-white/45 line-clamp-2 mb-3 leading-snug">
                   {dish.description}
                 </div>
               )}
 
               <div className="mt-auto">
-                <div className="text-2xl font-black text-white mb-3">
-                  {dish.price} ₽
+                <div className="flex items-baseline gap-1 mb-3">
+                  <span className="text-2xl font-black text-white">
+                    {dish.price}
+                  </span>
+                  <span className="text-lg font-bold text-white/60">₽</span>
                 </div>
+
                 <button
                   onClick={() => handleAdd(dish)}
-                  className="w-full py-3 rounded-2xl font-bold text-sm transition-all active:scale-95 shadow-lg hover:shadow-xl"
+                  className="w-full py-2.5 rounded-xl font-bold text-sm transition-all active:scale-95 shadow-lg"
                   style={{
-                    background: addedId === dish.id ? '#22c55e' : primaryColor,
+                    background:
+                      addedId === dish.id
+                        ? '#22c55e'
+                        : primaryColor,
                     color: '#fff',
                   }}
                 >
