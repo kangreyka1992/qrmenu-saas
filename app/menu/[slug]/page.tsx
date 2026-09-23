@@ -31,13 +31,13 @@ export default async function MenuPage({
 
   if (!subActive) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#f5f5f5] p-6">
+      <div className="min-h-screen flex items-center justify-center bg-[#f5ede0] p-6">
         <div className="text-center max-w-md">
           <div className="text-6xl mb-4">⏸</div>
-          <h1 className="text-2xl font-black text-gray-900 mb-2">
+          <h1 className="text-2xl font-black text-[#3a2a1a] mb-2">
             Меню временно недоступно
           </h1>
-          <p className="text-gray-500">
+          <p className="text-[#8a7a6a]">
             Владелец заведения не оплатил подписку. Меню вернётся после оплаты.
           </p>
         </div>
@@ -58,19 +58,25 @@ export default async function MenuPage({
     ),
   }))
 
-  const primaryColor = restaurant.primary_color || '#d4a574'
+  const primaryColor = restaurant.primary_color || '#c0392b'
 
   return (
     <CartProvider slug={restaurant.slug}>
       <div
-        className="min-h-screen bg-[#f5f5f5]"
-        style={{ maxWidth: 600, margin: '0 auto' }}
+        className="min-h-screen"
+        style={{
+          maxWidth: 600,
+          margin: '0 auto',
+          background: '#f5ede0',
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E")`,
+        }}
       >
         <TrackView restaurantId={restaurant.id} />
         <LanguageSwitcher />
 
+        {/* ═══ ШАПКА ═══ */}
         <div
-          className="text-center py-10 px-5 text-white"
+          className="text-center py-10 px-5 text-white relative"
           style={{
             background: `linear-gradient(135deg, ${primaryColor}, ${primaryColor}dd)`,
           }}
@@ -79,12 +85,17 @@ export default async function MenuPage({
             <img
               src={restaurant.logo_url}
               alt={restaurant.name}
-              className="w-20 h-20 rounded-xl mx-auto mb-3 object-cover shadow-lg"
+              className="w-24 h-24 rounded-2xl mx-auto mb-4 object-cover shadow-xl border-4 border-white/20"
             />
           ) : (
-            <div className="text-5xl mb-3">☕</div>
+            <div className="text-6xl mb-3">☕</div>
           )}
-          <h1 className="text-2xl font-black">{restaurant.name}</h1>
+          <h1
+            className="text-3xl font-black"
+            style={{ fontFamily: 'Georgia, serif' }}
+          >
+            {restaurant.name}
+          </h1>
           {restaurant.address && (
             <p className="text-sm opacity-90 mt-2">📍 {restaurant.address}</p>
           )}
@@ -96,8 +107,13 @@ export default async function MenuPage({
           )}
         </div>
 
-        <MenuSearch categories={sortedCategories} primaryColor={primaryColor} />
+        {/* ═══ МЕНЮ ═══ */}
+        <MenuSearch
+          categories={sortedCategories}
+          primaryColor={primaryColor}
+        />
 
+        {/* ═══ ПЛАВАЮЩАЯ КОРЗИНА ═══ */}
         <Suspense fallback={null}>
           <CartButton
             primaryColor={primaryColor}
@@ -106,6 +122,7 @@ export default async function MenuPage({
           />
         </Suspense>
 
+        {/* ═══ НИЖНИЕ КНОПКИ ═══ */}
         <div
           className="fixed bottom-0 left-0 right-0 z-30"
           style={{ maxWidth: 600, margin: '0 auto' }}
@@ -115,7 +132,7 @@ export default async function MenuPage({
               {restaurant.phone ? (
                 <a
                   href={`tel:${restaurant.phone.replace(/\D/g, '')}`}
-                  className="py-3 bg-white text-gray-900 font-bold rounded-xl text-center text-sm shadow-lg"
+                  className="py-3 bg-white text-[#3a2a1a] font-bold rounded-xl text-center text-sm shadow-lg"
                 >
                   📞 Позвонить
                 </a>
@@ -132,8 +149,9 @@ export default async function MenuPage({
           </div>
         </div>
 
+        {/* ═══ ПЛАШКА ═══ */}
         <div
-          className="bg-black text-white text-center py-3 text-xs"
+          className="bg-[#1a1a1a] text-white text-center py-3 text-xs"
           style={{ maxWidth: 600, margin: '0 auto' }}
         >
           Создано в{' '}
