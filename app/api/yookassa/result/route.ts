@@ -14,18 +14,29 @@ export async function POST(request: NextRequest) {
 
     console.log('YooKassa webhook:', event, payment?.id)
 
+    // ═══ УСПЕШНАЯ ОПЛАТА ═══
     if (event === 'payment.succeeded') {
+      const paymentId = payment.id
       const planId = payment?.metadata?.plan_id
       const planName = payment?.metadata?.plan_name
       const planType = payment?.metadata?.plan_type
       const email = payment?.metadata?.email
+
+      // 1. Обновляем статус в payments
+      await supabaseAdmin
+        .from('payments')
+        .update({
+          status: 'succeeded',
+          updated_at: new Date().toISOString(),
+        })
+        .eq('payment_id', paymentId)
 
       if (!email) {
         console.error('No email in metadata')
         return NextResponse.json({ ok: false }, { status: 400 })
       }
 
-      // Находим пользователя по email
+      // 2. Находим пользователя по email
       const { data: users } = await supabaseAdmin.auth.admin.listUsers()
       const user = users?.users?.find((u) => u.email === email)
 
@@ -34,8 +45,9 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ ok: false }, { status: 404 })
       }
 
+      // 3. Активируем подписку
       if (planType === 'lifetime') {
-        // Разовая оплата — навсегда
+        // Навсегда
         await supabaseAdmin
           .from('subscriptions')
           .update({
@@ -69,17 +81,19 @@ export async function POST(request: NextRequest) {
         console.log('Subscription activated:', planId, 'for', email)
       }
 
-      // Уведомление админу
+      // 4. Уведомление админу
       const adminChatId = process.env.ADMIN_TELEGRAM_CHAT_ID
-      if (adminChatId && process.env.TELEGRAM_BOT_TOKEN) {
+      const botToken = process.env.TELEGRAM_BOT_TOKEN
+
+      if (adminChatId && botToken) {
         await fetch(
-          `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`,
+          `https://api.telegram.org/bot${botToken}/sendMessage`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               chat_id: adminChatId,
-              text: `💰 <b>Новая оплата!</b>\n\nТариф: ${planName}\nСумма: ${payment.amount.value} ₽\nEmail: ${email}`,
+              text: `💰 <b>Новая оплата!</b>\n\nТариф: ${planName}\nСумма: ${payment.amount.value} ₽\nEmail: ${email}\nТип: ${planType === 'lifetime' ? 'Навсегда' : 'Подписка'}`,
               parse_mode: 'HTML',
             }),
           }
@@ -87,8 +101,19 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // ═══ ОТМЕНА ═══
     if (event === 'payment.canceled') {
-      console.log('Payment canceled:', payment?.id)
+      const paymentId = payment.id
+
+      await supabaseAdmin
+        .from('payments')
+        .update({
+          status: 'canceled',
+          updated_at: new Date().toISOString(),
+        })
+        .eq('payment_id', paymentId)
+
+      console.log('Payment canceled:', paymentId)
     }
 
     return NextResponse.json({ ok: true })
@@ -98,6 +123,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
+// GET для проверки, что роут живой
 export async function GET() {
   return NextResponse.json({ status: 'YooKassa webhook is alive' })
 }
