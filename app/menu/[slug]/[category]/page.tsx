@@ -50,26 +50,31 @@ export default async function CategoryPage({
       >
         {/* ═══ ШАПКА КАТЕГОРИИ ═══ */}
         <div
-          className="text-white p-4 sticky top-0 z-20 shadow-lg"
+          className="text-white p-5 sticky top-0 z-20 shadow-xl"
           style={{
             background: `linear-gradient(135deg, ${primaryColor}, ${primaryColor}dd)`,
           }}
         >
           <Link
             href={`/menu/${slug}`}
-            className="inline-flex items-center gap-2 text-sm font-bold opacity-90 hover:opacity-100"
+            className="inline-flex items-center gap-2 text-sm font-bold opacity-90 hover:opacity-100 transition-opacity"
           >
             ← Назад
           </Link>
-          <h1
-            className="text-2xl font-black mt-2"
-            style={{ fontFamily: 'Georgia, serif' }}
-          >
-            {categoryData.icon} {categoryData.name}
-          </h1>
-          <p className="text-xs opacity-80 mt-1">
-            {sortedDishes.length} блюд
-          </p>
+          <div className="flex items-center gap-3 mt-3">
+            <span className="text-4xl">{categoryData.icon || '🍽'}</span>
+            <div>
+              <h1
+                className="text-2xl font-black leading-tight"
+                style={{ fontFamily: 'Georgia, serif' }}
+              >
+                {categoryData.name}
+              </h1>
+              <p className="text-xs opacity-80 mt-0.5">
+                {sortedDishes.length} блюд
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* ═══ СЕТКА БЛЮД ═══ */}

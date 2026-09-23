@@ -75,36 +75,52 @@ export default async function MenuPage({
         <LanguageSwitcher />
 
         {/* ═══ ШАПКА ═══ */}
-        <div
-          className="text-center py-10 px-5 text-white relative"
-          style={{
-            background: `linear-gradient(135deg, ${primaryColor}, ${primaryColor}dd)`,
-          }}
-        >
-          {restaurant.logo_url ? (
-            <img
-              src={restaurant.logo_url}
-              alt={restaurant.name}
-              className="w-24 h-24 rounded-2xl mx-auto mb-4 object-cover shadow-xl border-4 border-white/20"
-            />
-          ) : (
-            <div className="text-6xl mb-3">☕</div>
-          )}
-          <h1
-            className="text-3xl font-black"
-            style={{ fontFamily: 'Georgia, serif' }}
-          >
-            {restaurant.name}
-          </h1>
-          {restaurant.address && (
-            <p className="text-sm opacity-90 mt-2">📍 {restaurant.address}</p>
-          )}
-          {restaurant.phone && (
-            <p className="text-sm opacity-90 mt-1">📞 {restaurant.phone}</p>
-          )}
-          {restaurant.work_hours && (
-            <p className="text-sm opacity-90 mt-1">🕐 {restaurant.work_hours}</p>
-          )}
+        <div className="relative overflow-hidden">
+          <div
+            className="absolute inset-0"
+            style={{
+              background: `linear-gradient(135deg, ${primaryColor}, ${primaryColor}dd)`,
+            }}
+          />
+          {/* Декоративные круги */}
+          <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-white/10" />
+          <div className="absolute -bottom-32 -left-16 w-64 h-64 rounded-full bg-white/5" />
+
+          <div className="relative text-center py-12 px-5 text-white">
+            {restaurant.logo_url ? (
+              <img
+                src={restaurant.logo_url}
+                alt={restaurant.name}
+                className="w-28 h-28 rounded-3xl mx-auto mb-4 object-cover shadow-2xl border-4 border-white/30 backdrop-blur-sm"
+              />
+            ) : (
+              <div className="text-7xl mb-4">☕</div>
+            )}
+            <h1
+              className="text-4xl font-black tracking-tight"
+              style={{ fontFamily: 'Georgia, serif' }}
+            >
+              {restaurant.name}
+            </h1>
+
+            <div className="flex flex-wrap justify-center gap-3 mt-4 text-sm">
+              {restaurant.address && (
+                <span className="px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm">
+                  📍 {restaurant.address}
+                </span>
+              )}
+              {restaurant.phone && (
+                <span className="px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm">
+                  📞 {restaurant.phone}
+                </span>
+              )}
+              {restaurant.work_hours && (
+                <span className="px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm">
+                  🕐 {restaurant.work_hours}
+                </span>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* ═══ ПЛИТКИ КАТЕГОРИЙ ═══ */}
